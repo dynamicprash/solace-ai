@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mindful — {{ 'Sign In' if mode == 'login' else 'Create Account' }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sage-400:#6a9e69; --sage-600:#3a6640; --sage-700:#2e5133;
+      --stone-200:#e4e0d8; --stone-400:#b0a898; --stone-500:#958c7a;
+      --stone-600:#786e5c; --stone-800:#4a4238;
+      --cream:#f7f4ee; --warm-white:#fdfcf9;
+      --font-display:'DM Serif Display', Georgia, serif;
+      --font-body:'DM Sans', system-ui, sans-serif;
+      --r-md:14px; --r-lg:22px; --r-xl:32px;
+    }
+    body {
+      font-family: var(--font-body);
+      background: var(--cream);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 20%, rgba(106,158,105,.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 80%, rgba(74,66,56,.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .card {
+      background: var(--warm-white);
+      border: 1px solid var(--stone-200);
+      border-radius: var(--r-xl);
+      padding: 48px 44px 40px;
+      width: 100%; max-width: 420px;
+      box-shadow: 0 8px 32px rgba(30,49,33,.12);
+      position: relative; z-index: 1;
+      animation: fadeUp .5s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(14px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .logo { text-align: center; margin-bottom: 36px; }
+    .logo-icon { font-size: 40px; display: block; margin-bottom: 10px; }
+    .logo-text {
+      font-family: var(--font-display);
+      font-size: 2rem; color: var(--sage-700);
+      letter-spacing: -.02em; display: block; margin-bottom: 6px;
+    }
+    .logo-sub { font-size: .875rem; color: var(--stone-500); font-style: italic; }
+    .tabs {
+      display: flex; background: #f2f0ec;
+      border-radius: var(--r-md); padding: 4px; margin-bottom: 28px;
+    }
+    .tab {
+      flex: 1; padding: 10px; border: none; background: transparent;
+      border-radius: 10px; font-family: var(--font-body);
+      font-size: .875rem; font-weight: 500; color: var(--stone-500);
+      cursor: pointer; text-decoration: none; text-align: center;
+      transition: all .18s;
+    }
+    .tab.active {
+      background: var(--warm-white); color: var(--sage-700);
+      box-shadow: 0 1px 4px rgba(30,49,33,.08);
+    }
+    .form { display: flex; flex-direction: column; gap: 18px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: .8125rem; font-weight: 500; color: var(--stone-600); }
+    input[type=text], input[type=password] {
+      padding: 12px 16px;
+      border: 1.5px solid var(--stone-200); border-radius: var(--r-md);
+      font-family: var(--font-body); font-size: .9375rem; color: var(--stone-800);
+      background: var(--warm-white); outline: none; width: 100%;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    input:focus {
+      border-color: var(--sage-400);
+      box-shadow: 0 0 0 3px rgba(106,158,105,.12);
+    }
+    input::placeholder { color: var(--stone-400); }
+    .error {
+      background: #fef2f2; border: 1px solid #fecaca;
+      color: #b91c1c; border-radius: 8px;
+      padding: 10px 14px; font-size: .875rem;
+    }
+    .btn {
+      margin-top: 4px; padding: 14px;
+      background: var(--sage-600); color: white;
+      border: none; border-radius: var(--r-md);
+      font-family: var(--font-body); font-size: .9375rem;
+      font-weight: 500; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 50px; transition: background .18s, transform .18s;
+    }
+    .btn:hover { background: var(--sage-700); }
+    .btn:active { transform: scale(.98); }
+    .btn:disabled { opacity: .6; cursor: not-allowed; }
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2.5px solid rgba(255,255,255,.3);
+      border-top-color: white; border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: none;
+    }
+    .btn.loading .btn-text { display: none; }
+    .btn.loading .spinner  { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .disclaimer {
+      margin-top: 24px; font-size: .78125rem;
+      color: var(--stone-400); text-align: center; line-height: 1.5;
+    }
+    .disclaimer strong { color: var(--stone-500); }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <span class="logo-icon">🌿</span>
+    <span class="logo-text">Mindful</span>
+    <span class="logo-sub">Your safe space to be heard</span>
+  </div>
+
+  <div class="tabs">
+    <a href="/login"    class="tab {{ 'active' if mode == 'login'    else '' }}">Sign In</a>
+    <a href="/register" class="tab {{ 'active' if mode == 'register' else '' }}">Create Account</a>
+  </div>
+
+  {% if error %}
+    <div class="error">{{ error }}</div>
+    <br/>
+  {% endif %}
+
+  {% if mode == 'login' %}
+  <form class="form" method="POST" action="/login" id="authForm">
+    <div class="field">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text"
+             placeholder="Enter your username" required autocomplete="username"/>
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password"
+             placeholder="Enter your password" required autocomplete="current-password"/>
+    </div>
+    <button class="btn" type="submit" id="submitBtn">
+      <span class="btn-text">Sign In</span>
+      <div class="spinner"></div>
+    </button>
+  </form>
+
+  {% else %}
+  <form class="form" method="POST" action="/register" id="authForm">
+    <div class="field">
+      <label for="name">Your Name</label>
+      <input id="name" name="name" type="text"
+             placeholder="How should we call you?" required/>
+    </div>
+    <div class="field">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text"
+             placeholder="Choose a username" required autocomplete="username"/>
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password"
+             placeholder="At least 6 characters" required autocomplete="new-password"/>
+    </div>
+    <button class="btn" type="submit" id="submitBtn">
+      <span class="btn-text">Create Account</span>
+      <div class="spinner"></div>
+    </button>
+  </form>
+  {% endif %}
+
+  <p class="disclaimer">
+    This is a supportive tool, not a substitute for professional mental health care.<br/>
+    If you're in crisis, please call <strong>988</strong>.
+  </p>
+</div>
+
+<script>
+  document.getElementById('authForm').addEventListener('submit', function() {
+    const btn = document.getElementById('submitBtn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+  });
+</script>
+</body>
+</html>

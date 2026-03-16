@@ -1,0 +1,22 @@
+# Core ML
+torch>=2.0.0
+transformers>=4.35.0
+scikit-learn>=1.3.0
+
+# Data
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Visualisation (training report)
+matplotlib>=3.7.0
+
+# Web
+flask>=3.0.0
+flask-cors>=4.0.0
+
+# LLM — Groq (FREE, fast)
+# Get free API key at: https://console.groq.com
+groq>=0.9.0
+
+# Production server
+gunicorn>=21.0.0

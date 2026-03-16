@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mindful — Chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <!-- Marked.js for markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sage-100:#e4ede4; --sage-200:#c5d9c4; --sage-300:#9abf99;
+      --sage-400:#6a9e69; --sage-500:#4d8050; --sage-600:#3a6640;
+      --sage-700:#2e5133; --sage-800:#263f2a; --sage-900:#1e3121;
+      --stone-100:#f2f0ec; --stone-200:#e4e0d8; --stone-300:#cdc8bc;
+      --stone-400:#b0a898; --stone-500:#958c7a; --stone-600:#786e5c;
+      --stone-700:#60574a; --stone-800:#4a4238;
+      --cream:#f7f4ee; --warm-white:#fdfcf9;
+      --sev-high:#c0444a; --sev-med:#c9843a; --sev-low:#6a9e69;
+      --font-display:'DM Serif Display', Georgia, serif;
+      --font-body:'DM Sans', system-ui, sans-serif;
+      --r-sm:8px; --r-md:14px; --r-lg:22px;
+    }
+    body { font-family:var(--font-body); background:var(--cream); color:var(--stone-800); overflow:hidden; }
+    ::-webkit-scrollbar { width:5px; } ::-webkit-scrollbar-thumb { background:var(--stone-300); border-radius:99px; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes pulse  { 0%,100%{opacity:1} 50%{opacity:.4} }
+    @keyframes blink  { 0%,100%{opacity:1} 50%{opacity:0} }
+    @keyframes spin   { to{transform:rotate(360deg)} }
+    @keyframes shimmer {
+      0%{background-position:-200% 0} 100%{background-position:200% 0}
+    }
+
+    /* ── Layout ──────────────────────────────────────── */
+    .layout { display:flex; height:100vh; overflow:hidden; }
+    .sidebar-wrap { width:260px; flex-shrink:0; transition:width .25s,opacity .25s; overflow:hidden; }
+    .sidebar-wrap.closed { width:0; opacity:0; }
+
+    /* ── Sidebar ─────────────────────────────────────── */
+    .sidebar {
+      width:260px; height:100vh; background:var(--sage-900);
+      display:flex; flex-direction:column; overflow:hidden;
+    }
+    .sb-header { padding:22px 18px 16px; border-bottom:1px solid rgba(255,255,255,.07); }
+    .sb-logo { display:flex; align-items:center; gap:8px; }
+    .sb-logo-text { font-family:var(--font-display); font-size:1.25rem; color:var(--sage-200); }
+    .sb-new {
+      margin:14px 14px 8px; padding:11px 16px;
+      background:rgba(255,255,255,.08); border:1.5px dashed rgba(255,255,255,.2);
+      border-radius:var(--r-md); color:var(--sage-200);
+      font-family:var(--font-body); font-size:.875rem; font-weight:500;
+      cursor:pointer; display:flex; align-items:center; gap:8px; width:calc(100% - 28px);
+      transition:all .2s;
+    }
+    .sb-new:hover { background:rgba(255,255,255,.13); border-color:rgba(255,255,255,.3); }
+    .sb-list { flex:1; overflow-y:auto; padding:0 8px; }
+    .sb-label {
+      font-size:.6875rem; text-transform:uppercase; letter-spacing:.1em;
+      color:rgba(255,255,255,.3); padding:8px 10px 6px; font-weight:500;
+    }
+    .sb-item {
+      padding:10px; border-radius:var(--r-sm); cursor:pointer;
+      margin-bottom:2px; transition:background .15s;
+    }
+    .sb-item:hover    { background:rgba(255,255,255,.06); }
+    .sb-item.active   { background:rgba(106,158,105,.2) !important; }
+    .sb-item-top { display:flex; align-items:center; gap:7px; margin-bottom:4px; }
+    .sb-item-title {
+      flex:1; font-size:.8125rem; color:rgba(255,255,255,.8);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .sb-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+    .sb-item-meta { display:flex; align-items:center; gap:6px; font-size:.6875rem; color:rgba(255,255,255,.3); padding-left:22px; }
+    .sb-tag {
+      background:rgba(106,158,105,.25); color:var(--sage-300);
+      padding:1px 6px; border-radius:99px; font-size:.625rem; font-weight:500;
+    }
+    .sb-del { margin-left:auto; background:none; border:none; color:rgba(255,255,255,.2); cursor:pointer; font-size:1rem; display:none; }
+    .sb-item:hover .sb-del { display:block; }
+    .sb-del:hover { color:rgba(255,100,100,.7); }
+    .sb-footer {
+      padding:14px; border-top:1px solid rgba(255,255,255,.07);
+      display:flex; align-items:center; gap:10px;
+    }
+    .sb-user { flex:1; display:flex; align-items:center; gap:10px; min-width:0; }
+    .sb-avatar {
+      width:32px; height:32px; border-radius:50%; background:var(--sage-600);
+      color:white; display:flex; align-items:center; justify-content:center;
+      font-size:.875rem; font-weight:600; flex-shrink:0;
+    }
+    .sb-name { font-size:.8125rem; font-weight:500; color:rgba(255,255,255,.85); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .sb-logout {
+      background:none; border:none; color:rgba(255,255,255,.3);
+      font-size:1.1rem; cursor:pointer; padding:4px 6px; border-radius:var(--r-sm);
+    }
+    .sb-logout:hover { background:rgba(255,255,255,.08); color:rgba(255,255,255,.6); }
+    .sb-skeleton {
+      height:52px; border-radius:var(--r-sm);
+      background:linear-gradient(90deg,rgba(255,255,255,.05) 0%,rgba(255,255,255,.09) 50%,rgba(255,255,255,.05) 100%);
+      background-size:200% 100%; animation:shimmer 1.5s infinite;
+      margin-bottom:6px;
+    }
+
+    /* ── Main area ───────────────────────────────────── */
+    .main { flex:1; display:flex; flex-direction:column; min-width:0; height:100vh; }
+    .topbar {
+      display:flex; align-items:center; gap:12px; padding:10px 20px;
+      background:var(--warm-white); border-bottom:1px solid var(--stone-200);
+      min-height:60px; flex-shrink:0;
+    }
+    .menu-btn {
+      width:36px; height:36px; background:var(--stone-100);
+      border:1px solid var(--stone-200); border-radius:var(--r-sm);
+      font-size:.9rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+      flex-shrink:0;
+    }
+    .menu-btn:hover { background:var(--stone-200); }
+    .topbar-center { flex:1; }
+    .new-chat-btn {
+      padding:8px 16px; background:var(--sage-600); color:white;
+      border:none; border-radius:var(--r-sm);
+      font-family:var(--font-body); font-size:.8125rem; font-weight:500;
+      cursor:pointer; white-space:nowrap;
+    }
+    .new-chat-btn:hover { background:var(--sage-700); }
+
+    /* ── Severity badge ──────────────────────────────── */
+    .severity-badge {
+      background:var(--warm-white); border:1.5px solid var(--stone-200);
+      border-radius:var(--r-md); padding:10px 14px;
+      display:none; animation:fadeIn .3s ease both;
+    }
+    .severity-badge.visible { display:block; }
+    .severity-badge.high   { border-color:rgba(192,68,74,.3);  background:#fef9f9; }
+    .severity-badge.medium { border-color:rgba(201,132,58,.3); background:#fefaf5; }
+    .severity-badge.low    { border-color:rgba(106,158,105,.3);background:#f6faf6; }
+    .badge-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .badge-icon { font-size:1rem; }
+    .badge-info { flex:1; }
+    .badge-cat  { font-size:.8125rem; font-weight:500; color:var(--stone-700); }
+    .badge-sev  { font-size:.6875rem; font-weight:500; text-transform:uppercase; letter-spacing:.06em; }
+    .badge-sev.high   { color:var(--sev-high); }
+    .badge-sev.medium { color:var(--sev-med); }
+    .badge-sev.low    { color:var(--sev-low); }
+    .badge-conf { font-size:.6875rem; color:var(--stone-400); background:var(--stone-100); padding:2px 7px; border-radius:99px; }
+    .progress-wrap {}
+    .progress-labels { display:flex; justify-content:space-between; font-size:.6875rem; color:var(--stone-400); margin-bottom:4px; }
+    .progress-bar { height:5px; background:var(--stone-200); border-radius:99px; overflow:hidden; }
+    .progress-fill { height:100%; background:var(--sage-400); border-radius:99px; transition:width .5s ease; }
+
+    /* ── Messages ────────────────────────────────────── */
+    .messages-area {
+      flex:1; overflow-y:auto; padding:28px 24px;
+      display:flex; flex-direction:column; gap:18px;
+    }
+    .inner { max-width:820px; width:100%; margin:0 auto; display:flex; flex-direction:column; gap:18px; }
+
+    /* ── Welcome ─────────────────────────────────────── */
+    .welcome {
+      display:flex; flex-direction:column; align-items:center;
+      text-align:center; padding:48px 24px;
+      animation:fadeUp .5s ease both; max-width:500px; margin:auto;
+    }
+    .welcome-icon { font-size:3.5rem; margin-bottom:20px; }
+    .welcome-title { font-family:var(--font-display); font-size:2rem; color:var(--sage-800); margin-bottom:14px; letter-spacing:-.02em; }
+    .welcome-sub { color:var(--stone-500); font-size:.9375rem; line-height:1.7; margin-bottom:28px; }
+    .welcome-features { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:32px; width:100%; max-width:360px; }
+    .feature {
+      display:flex; align-items:center; gap:8px;
+      background:var(--warm-white); border:1px solid var(--stone-200);
+      border-radius:var(--r-md); padding:10px 14px;
+      font-size:.8125rem; color:var(--stone-600);
+    }
+    .start-btn {
+      padding:15px 40px; background:var(--sage-600); color:white;
+      border:none; border-radius:var(--r-lg);
+      font-family:var(--font-body); font-size:1rem; font-weight:500;
+      cursor:pointer; min-width:220px; min-height:52px;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 4px 16px rgba(74,128,80,.25); transition:all .2s;
+    }
+    .start-btn:hover { background:var(--sage-700); transform:translateY(-1px); }
+    .start-btn:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+
+    /* ── Chat bubbles ─────────────────────────────────── */
+    .msg-wrap { display:flex; align-items:flex-end; gap:10px; animation:fadeUp .3s ease both; }
+    .msg-wrap.user { justify-content:flex-end; }
+    .msg-avatar {
+      width:34px; height:34px; border-radius:50%; background:var(--sage-100);
+      display:flex; align-items:center; justify-content:center;
+      font-size:1rem; flex-shrink:0; border:1.5px solid var(--sage-200);
+    }
+    .msg-avatar.user-av {
+      background:var(--sage-600); color:white;
+      font-size:.6875rem; font-weight:600; letter-spacing:.02em;
+    }
+    .msg-bubble {
+      max-width:min(480px,80%); padding:14px 18px;
+      border-radius:var(--r-lg); line-height:1.65; font-size:.9375rem;
+    }
+    .msg-bubble.user {
+      background:var(--sage-600); color:white;
+      border-bottom-right-radius:4px;
+    }
+    .msg-bubble.bot {
+      background:var(--warm-white); color:var(--stone-800);
+      border:1.5px solid var(--stone-200);
+      border-bottom-left-radius:4px;
+      box-shadow:0 1px 4px rgba(30,49,33,.08);
+    }
+    .msg-bubble.conclusion {
+      background:linear-gradient(135deg,#f8faf8 0%,#f4f7f2 100%);
+      border-color:var(--sage-300); max-width:min(620px,90%);
+    }
+    .conclusion-header {
+      font-size:.78125rem; font-weight:600; color:var(--sage-600);
+      text-transform:uppercase; letter-spacing:.08em;
+      margin-bottom:10px; padding-bottom:10px;
+      border-bottom:1px solid var(--sage-200);
+    }
+    /* Markdown styles */
+    .bot-content h2 { font-family:var(--font-display); font-size:1.0625rem; color:var(--sage-700); margin:14px 0 6px; padding-bottom:4px; border-bottom:1px solid var(--sage-200); }
+    .bot-content h2:first-child { margin-top:0; }
+    .bot-content p { margin:0 0 8px; }
+    .bot-content p:last-child { margin-bottom:0; }
+    .bot-content ul { padding-left:18px; margin:6px 0; }
+    .bot-content li { margin-bottom:4px; }
+    .bot-content strong { color:var(--stone-700); font-weight:600; }
+    .bot-content a { color:var(--sage-600); }
+    .cursor { display:inline-block; width:2px; height:1em; background:var(--sage-500); margin-left:2px; vertical-align:text-bottom; animation:blink .8s step-end infinite; }
+
+    /* ── Typing indicator ─────────────────────────────── */
+    .typing-wrap { display:flex; align-items:flex-end; gap:10px; animation:fadeIn .2s ease; }
+    .typing-bubble {
+      background:var(--warm-white); border:1.5px solid var(--stone-200);
+      border-radius:18px; border-bottom-left-radius:4px;
+      padding:14px 20px; display:flex; gap:5px; align-items:center;
+    }
+    .typing-bubble span {
+      width:7px; height:7px; background:var(--stone-400); border-radius:50%;
+      animation:pulse 1.2s ease infinite;
+    }
+    .typing-bubble span:nth-child(2) { animation-delay:.2s; }
+    .typing-bubble span:nth-child(3) { animation-delay:.4s; }
+
+    /* ── Banners ──────────────────────────────────────── */
+    .concluded-banner {
+      background:linear-gradient(135deg,var(--sage-100),var(--sage-200));
+      border:1px solid var(--sage-300); border-radius:var(--r-md);
+      padding:14px 20px; font-size:.875rem; color:var(--sage-700);
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    }
+    .inline-btn {
+      background:none; border:none; color:var(--sage-600);
+      font-size:inherit; cursor:pointer; font-weight:500; text-decoration:underline;
+    }
+    .error-banner {
+      background:#fef2f2; border:1px solid #fecaca;
+      border-radius:var(--r-md); padding:12px 16px;
+      font-size:.875rem; color:#b91c1c;
+    }
+
+    /* ── Input area ───────────────────────────────────── */
+    .input-area {
+      padding:16px 24px 20px; background:var(--warm-white);
+      border-top:1px solid var(--stone-200); flex-shrink:0;
+    }
+    .input-inner { max-width:820px; margin:0 auto; }
+    .input-row {
+      display:flex; gap:10px; align-items:flex-end;
+      background:var(--cream); border:1.5px solid var(--stone-300);
+      border-radius:var(--r-lg); padding:10px 10px 10px 18px;
+      transition:border-color .2s, box-shadow .2s;
+    }
+    .input-row:focus-within { border-color:var(--sage-400); box-shadow:0 0 0 3px rgba(106,158,105,.1); }
+    #msgInput {
+      flex:1; border:none; background:transparent;
+      font-family:var(--font-body); font-size:.9375rem; color:var(--stone-800);
+      outline:none; resize:none; max-height:140px; overflow-y:auto; line-height:1.6;
+      min-height:24px;
+    }
+    #msgInput::placeholder { color:var(--stone-400); }
+    #msgInput:disabled { opacity:.6; }
+    .send-btn {
+      width:38px; height:38px; background:var(--sage-600); color:white;
+      border:none; border-radius:50%; font-size:1.1rem;
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      flex-shrink:0; transition:all .2s;
+    }
+    .send-btn:hover:not(:disabled) { background:var(--sage-700); transform:scale(1.05); }
+    .send-btn:disabled { background:var(--stone-300); cursor:not-allowed; }
+    .input-hint { margin-top:7px; font-size:.71875rem; color:var(--stone-400); text-align:center; }
+    .input-hint kbd { background:var(--stone-200); border-radius:3px; padding:1px 5px; font-family:monospace; font-size:.6875rem; }
+    .session-done { text-align:center; color:var(--stone-500); font-size:.9rem; padding:14px; }
+    .btn-spinner { width:16px; height:16px; border:2px solid rgba(255,255,255,.4); border-top-color:white; border-radius:50%; animation:spin .7s linear infinite; display:none; }
+    .send-btn.loading .btn-spinner { display:block; }
+    .send-btn.loading .send-icon { display:none; }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ── Sidebar ────────────────────────────────────────────────────── -->
+  <div class="sidebar-wrap" id="sidebarWrap">
+    <aside class="sidebar">
+      <div class="sb-header">
+        <div class="sb-logo">
+          <span>🌿</span>
+          <span class="sb-logo-text">Mindful</span>
+        </div>
+      </div>
+
+      <button class="sb-new" onclick="startNewSession()">
+        <span style="font-size:1.1rem">+</span> New Conversation
+      </button>
+
+      <div class="sb-list" id="sbList">
+        <p class="sb-label">Recent Sessions</p>
+        {% if past_sessions %}
+          {% for s in past_sessions %}
+          <div class="sb-item" id="sb-{{ s.session_id }}"
+               onclick="loadSession('{{ s.session_id }}')">
+            <div class="sb-item-top">
+              <span style="font-size:.875rem">
+                {{ {'anxiety':'🌊','depression':'🌧','self_harm':'⚠️','neutral':'☁️'}.get(s.final_category,'💭') }}
+              </span>
+              <span class="sb-item-title">{{ s.title or 'Conversation' }}</span>
+              {% if s.final_severity %}
+              <span class="sb-dot" style="background:{{ {'high':'#c0444a','medium':'#c9843a','low':'#6a9e69'}.get(s.final_severity,'#999') }}"></span>
+              {% endif %}
+            </div>
+            <div class="sb-item-meta">
+              <span>{{ s.updated_at[:10] }}</span>
+              {% if s.concluded %}<span class="sb-tag">Completed</span>{% endif %}
+              <button class="sb-del" onclick="deleteSession(event,'{{ s.session_id }}')">×</button>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p style="font-size:.8125rem;color:rgba(255,255,255,.25);text-align:center;padding:24px 16px;font-style:italic">
+            No conversations yet
+          </p>
+        {% endif %}
+      </div>
+
+      <div class="sb-footer">
+        <div class="sb-user">
+          <div class="sb-avatar">{{ user.name[0].upper() if user and user.name else 'U' }}</div>
+          <div>
+            <p class="sb-name">{{ user.name if user else 'User' }}</p>
+          </div>
+        </div>
+        <form action="/logout" method="POST" style="margin:0">
+          <button class="sb-logout" type="submit" title="Sign out">↩</button>
+        </form>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ── Main ──────────────────────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">☰</button>
+
+      <div class="topbar-center">
+        <!-- Severity Badge -->
+        <div class="severity-badge" id="severityBadge">
+          <div class="badge-row">
+            <span class="badge-icon" id="badgeIcon">💭</span>
+            <div class="badge-info">
+              <span class="badge-cat" id="badgeCat">Analysing...</span>
+              <br/>
+              <span class="badge-sev" id="badgeSev"></span>
+            </div>
+            <span class="badge-conf" id="badgeConf"></span>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-labels">
+              <span>Assessment progress</span>
+              <span id="progressLabel">0 / 5 questions</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="new-chat-btn" id="newChatBtn" onclick="startNewSession()" style="display:none">
+        New Chat
+      </button>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages-area" id="messagesArea">
+      <div class="inner" id="inner">
+
+        <!-- Welcome -->
+        <div class="welcome" id="welcomeScreen">
+          <div class="welcome-icon">🌿</div>
+          <h2 class="welcome-title">Welcome to Mindful</h2>
+          <p class="welcome-sub">
+            A safe, private space to talk about how you're feeling.<br/>
+            Our AI will gently guide you through a few questions<br/>
+            before offering personalised insights and support.
+          </p>
+          <div class="welcome-features">
+            <div class="feature"><span>🔍</span><span>AI-powered analysis</span></div>
+            <div class="feature"><span>💬</span><span>Empathetic conversation</span></div>
+            <div class="feature"><span>📋</span><span>Personalised assessment</span></div>
+            <div class="feature"><span>🔒</span><span>Private &amp; secure</span></div>
+          </div>
+          <button class="start-btn" id="startBtn" onclick="startNewSession()">
+            <span class="btn-text">Start a Conversation</span>
+            <span class="btn-spinner"></span>
+          </button>
+        </div>
+
+      </div><!-- /inner -->
+    </div><!-- /messages-area -->
+
+    <!-- Input -->
+    <div class="input-area" id="inputArea" style="display:none">
+      <div class="input-inner">
+        <div id="sessionDoneMsg" class="session-done" style="display:none">
+          This session is complete. 
+          <button class="inline-btn" onclick="startNewSession()">Start a new conversation →</button>
+        </div>
+        <div id="inputRow" class="input-row">
+          <textarea id="msgInput" placeholder="Share how you're feeling…" rows="1"
+                    onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+            <span class="send-icon">↑</span>
+            <span class="btn-spinner"></span>
+          </button>
+        </div>
+        <p class="input-hint">Press <kbd>Enter</kbd> to send · <kbd>Shift+Enter</kbd> for new line</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let currentSessionId = null;
+let isStreaming       = false;
+let isConcluded       = false;
+let questionCount     = 0;
+const MAX_QUESTIONS   = 5;
+
+const CAT_ICONS   = {anxiety:'🌊', depression:'🌧', self_harm:'⚠️', neutral:'☁️'};
+const CAT_LABELS  = {anxiety:'Anxiety', depression:'Depression', self_harm:'Self-harm risk', neutral:'General distress'};
+const SEV_COLORS  = {high:'#c0444a', medium:'#c9843a', low:'#6a9e69'};
+
+// ── UI helpers ─────────────────────────────────────────────────────────────
+function scrollBottom() {
+  const ma = document.getElementById('messagesArea');
+  ma.scrollTo({top: ma.scrollHeight, behavior:'smooth'});
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+}
+
+function toggleSidebar() {
+  const wrap = document.getElementById('sidebarWrap');
+  const btn  = document.getElementById('menuBtn');
+  wrap.classList.toggle('closed');
+  btn.textContent = wrap.classList.contains('closed') ? '☰' : '←';
+}
+
+function showInput(show) {
+  const el = document.getElementById('inputArea');
+  if (el) el.style.display = show ? 'block' : 'none';
+  if (show) setTimeout(() => {
+    const inp = document.getElementById('msgInput');
+    if (inp) inp.focus();
+  }, 50);
+}
+
+function showWelcome(show) {
+  const el = document.getElementById('welcomeScreen');
+  if (el) el.style.display = show ? 'flex' : 'none';
+}
+
+function setInputDisabled(disabled) {
+  const inp = document.getElementById('msgInput');
+  const btn = document.getElementById('sendBtn');
+  if (inp) inp.disabled = disabled;
+  if (btn) btn.disabled = disabled;
+  if (btn) {
+    if (disabled) { btn.classList.add('loading'); }
+    else { btn.classList.remove('loading'); }
+  }
+}
+
+function addMessage(role, content, opts = {}) {
+  const inner = document.getElementById('inner');
+
+  const wrap = document.createElement('div');
+  wrap.classList.add('msg-wrap');
+  if (role === 'user') wrap.classList.add('user');
+
+  if (role === 'user') {
+    // User bubble
+    wrap.innerHTML = `
+      <div class="msg-bubble user">${escHtml(content)}</div>
+      <div class="msg-avatar user-av">You</div>`;
+  } else {
+    // Bot bubble
+    const conclusionHeader = opts.isConclusion
+      ? '<div class="conclusion-header">📋 Assessment Complete</div>' : '';
+    const extraClass = opts.isConclusion ? ' conclusion' : '';
+    const id = opts.id ? `id="${opts.id}"` : '';
+    wrap.innerHTML = `
+      <div class="msg-avatar">${opts.concluding ? '📋' : '🌿'}</div>
+      <div class="msg-bubble bot${extraClass}" ${id}>
+        ${conclusionHeader}
+        <div class="bot-content" id="${opts.contentId || ''}"></div>
+        ${opts.streaming ? '<span class="cursor" id="cursor"></span>' : ''}
+      </div>`;
+  }
+  inner.appendChild(wrap);
+  scrollBottom();
+  return wrap;
+}
+
+function renderMarkdown(el, md) {
+  el.innerHTML = marked.parse(md || '');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Severity badge ─────────────────────────────────────────────────────────
+function updateBadge(category, severity, catConf, qCount, maxQ) {
+  const badge = document.getElementById('severityBadge');
+  if (!badge) return;
+  badge.className = `severity-badge visible ${severity}`;
+  const badgeIcon = document.getElementById('badgeIcon');
+  const badgeCat  = document.getElementById('badgeCat');
+  const badgeSev  = document.getElementById('badgeSev');
+  const badgeConf = document.getElementById('badgeConf');
+  const fill      = document.getElementById('progressFill');
+  const label     = document.getElementById('progressLabel');
+  if (badgeIcon) badgeIcon.textContent = CAT_ICONS[category] || '💭';
+  if (badgeCat)  badgeCat.textContent  = CAT_LABELS[category] || category;
+  if (badgeSev)  { badgeSev.textContent = severity + ' severity'; badgeSev.className = 'badge-sev ' + severity; }
+  if (badgeConf) badgeConf.textContent = catConf ? Math.round(catConf*100)+'%' : '';
+  const pct = Math.round((qCount / maxQ) * 100);
+  if (fill)  fill.style.width  = pct + '%';
+  if (label) label.textContent = qCount + ' / ' + maxQ + ' questions';
+}
+
+// ── Reset all state ───────────────────────────────────────────────────────
+function resetState() {
+  currentSessionId = null;
+  questionCount    = 0;
+  isConcluded      = false;
+  isStreaming      = false;
+
+  // Clear messages
+  const inner = document.getElementById('inner');
+  if (inner) inner.innerHTML = '';
+
+  // Reset severity badge
+  const badge = document.getElementById('severityBadge');
+  if (badge) badge.className = 'severity-badge';
+  const fill  = document.getElementById('progressFill');
+  const label = document.getElementById('progressLabel');
+  if (fill)  fill.style.width  = '0%';
+  if (label) label.textContent = '0 / 5 questions';
+
+  // Re-enable input
+  setInputDisabled(false);
+  const inputRow      = document.getElementById('inputRow');
+  const sessionDoneMsg= document.getElementById('sessionDoneMsg');
+  const newChatBtn    = document.getElementById('newChatBtn');
+  if (inputRow)       inputRow.style.display       = 'none';
+  if (sessionDoneMsg) sessionDoneMsg.style.display = 'none';
+  if (newChatBtn)     newChatBtn.style.display      = 'none';
+}
+
+// ── Start new session ──────────────────────────────────────────────────────
+async function startNewSession() {
+  // Reset everything first
+  resetState();
+
+  const startBtn = document.getElementById('startBtn');
+  if (startBtn) {
+    startBtn.disabled = true;
+    startBtn.classList.add('loading');
+  }
+
+  try {
+    const r = await fetch('/api/start', {method:'POST', headers:{'Content-Type':'application/json'}});
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error);
+
+    currentSessionId = data.session_id;
+    questionCount    = 0;
+    isConcluded      = false;
+    isStreaming      = false;
+
+    showWelcome(false);
+    showInput(true);
+
+    const newChatBtn    = document.getElementById('newChatBtn');
+    const sessionDoneMsg= document.getElementById('sessionDoneMsg');
+    const inputRow      = document.getElementById('inputRow');
+    if (newChatBtn)     newChatBtn.style.display      = 'block';
+    if (sessionDoneMsg) sessionDoneMsg.style.display  = 'none';
+    if (inputRow)       inputRow.style.display        = 'flex';
+
+    // Re-enable send button explicitly
+    setInputDisabled(false);
+
+    // Show opening message
+    addMessage('bot', '', {contentId:'open-content', streaming:false});
+    const openEl = document.getElementById('open-content');
+    if (openEl) renderMarkdown(openEl, data.message);
+    scrollBottom();
+
+    // Add to sidebar
+    addSidebarItem(data.session_id, data.message.substring(0, 40));
+    highlightSidebarItem(data.session_id);
+
+  } catch(e) {
+    alert('Could not start session: ' + e.message);
+    showWelcome(true);
+    showInput(false);
+  } finally {
+    if (startBtn) {
+      startBtn.disabled = false;
+      startBtn.classList.remove('loading');
+    }
+  }
+}
+
+// ── Add item to sidebar dynamically ───────────────────────────────────────
+function addSidebarItem(sid, title) {
+  const list = document.getElementById('sbList');
+  if (!list) return;
+  // Remove "no conversations yet" placeholder if present
+  const empty = list.querySelector('p[style*="italic"]');
+  if (empty) empty.remove();
+
+  const item = document.createElement('div');
+  item.className = 'sb-item';
+  item.id = 'sb-' + sid;
+  item.onclick = () => loadSession(sid);
+  item.innerHTML = `
+    <div class="sb-item-top">
+      <span class="sb-icon-${sid}" style="font-size:.875rem">💭</span>
+      <span class="sb-item-title sb-title-${sid}">New Conversation</span>
+    </div>
+    <div class="sb-item-meta">
+      <span>just now</span>
+      <button class="sb-del" onclick="deleteSession(event,'${sid}')">×</button>
+    </div>`;
+  // Insert at top after the label
+  const label = list.querySelector('.sb-label');
+  if (label && label.nextSibling) {
+    list.insertBefore(item, label.nextSibling);
+  } else {
+    list.appendChild(item);
+  }
+}
+
+// ── Update sidebar item title + icon after first message ──────────────────
+function updateSidebarItem(sid, title, category) {
+  const titleEl = document.querySelector('.sb-title-' + sid);
+  const iconEl  = document.querySelector('.sb-icon-' + sid);
+  const icons   = {anxiety:'🌊', depression:'🌧', self_harm:'⚠️', neutral:'☁️'};
+  if (titleEl && title) titleEl.textContent = title.length > 40 ? title.substring(0,40)+'...' : title;
+  if (iconEl && category) iconEl.textContent = icons[category] || '💭';
+}
+
+// ── Send message ───────────────────────────────────────────────────────────
+async function sendMessage() {
+  if (!currentSessionId || isStreaming || isConcluded) return;
+  const input = document.getElementById('msgInput');
+  const text  = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  autoResize(input);
+  isStreaming = true;
+  setInputDisabled(true);
+
+  // Update sidebar title with first user message
+  updateSidebarItem(currentSessionId, text, null);
+
+  // User bubble
+  addMessage('user', text);
+
+  // Bot bubble placeholder
+  const botId      = 'bot-' + Date.now();
+  const contentId  = 'content-' + Date.now();
+  const wrapEl     = addMessage('bot', '', {id: botId, contentId, streaming: true});
+
+  try {
+    const r = await fetch('/api/message', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message: text, session_id: currentSessionId}),
+    });
+
+    if (!r.ok) {
+      const err = await r.json();
+      throw new Error(err.error || 'Request failed');
+    }
+
+    const reader  = r.body.getReader();
+    const decoder = new TextDecoder();
+    let   buffer  = '';
+    let   fullResponse = '';
+    let   isConclusion = false;
+
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, {stream:true});
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const ev = JSON.parse(line.slice(6));
+
+          if (ev.type === 'analysis') {
+            updateBadge(ev.category, ev.severity, ev.cat_conf,
+                        ev.question_count, ev.max_questions);
+            // Update sidebar icon with detected category
+            updateSidebarItem(currentSessionId, null, ev.category);
+          }
+
+          if (ev.type === 'concluding') {
+            isConclusion = true;
+            // Update bubble to conclusion style
+            const bubble = document.getElementById(botId);
+            if (bubble) {
+              bubble.classList.add('conclusion');
+              bubble.insertAdjacentHTML('afterbegin',
+                '<div class="conclusion-header">📋 Assessment Complete</div>');
+            }
+          }
+
+          if (ev.type === 'token') {
+            fullResponse += ev.content;
+            const contentEl = document.getElementById(contentId);
+            if (contentEl) renderMarkdown(contentEl, fullResponse);
+            scrollBottom();
+          }
+
+          if (ev.type === 'done') {
+            questionCount = ev.question_count;
+            isConcluded   = ev.concluded;
+            updateBadge(ev.category, ev.severity, null,
+                        ev.question_count, ev.max_questions);
+
+            // Remove cursor
+            const cursor = document.getElementById('cursor');
+            if (cursor) cursor.remove();
+
+            if (isConcluded) {
+              document.getElementById('inputRow').style.display = 'none';
+              document.getElementById('sessionDoneMsg').style.display = 'block';
+              // Concluded banner
+              const inner = document.getElementById('inner');
+              const banner = document.createElement('div');
+              banner.className = 'concluded-banner';
+              banner.innerHTML = `✨ Session complete — your personalised assessment is above 
+                <button class="inline-btn" onclick="startNewSession()">Start new conversation →</button>`;
+              inner.appendChild(banner);
+            }
+          }
+
+          if (ev.type === 'error') {
+            throw new Error(ev.content);
+          }
+
+        } catch(parseErr) {/* skip malformed */ }
+      }
+    }
+  } catch(e) {
+    const contentEl = document.getElementById(contentId);
+    if (contentEl) contentEl.textContent = 'Sorry, something went wrong: ' + e.message;
+  } finally {
+    isStreaming = false;
+    if (!isConcluded) {
+      setInputDisabled(false);
+      const inp = document.getElementById('msgInput');
+      if (inp) inp.focus();
+    }
+    // Always remove the cursor if it's still there
+    const cursor = document.getElementById('cursor');
+    if (cursor) cursor.remove();
+  }
+}
+
+// ── Load past session ──────────────────────────────────────────────────────
+async function loadSession(sid) {
+  try {
+    const r = await fetch(`/api/session/${sid}`);
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error);
+
+    currentSessionId = data.session_id;
+    questionCount    = data.question_count;
+    isConcluded      = data.concluded;
+
+    const inner = document.getElementById('inner');
+    inner.innerHTML = '';
+    showWelcome(false);
+    showInput(true);
+    document.getElementById('newChatBtn').style.display = 'block';
+
+    // Render history
+    data.history.forEach((m, i) => {
+      const cId = `hist-${i}`;
+      if (m.role === 'user') {
+        addMessage('user', m.content);
+      } else {
+        addMessage('bot', '', {
+          contentId: cId,
+          isConclusion: data.concluded && i === data.history.length - 1,
+        });
+        const el = document.getElementById(cId);
+        if (el) renderMarkdown(el, m.content);
+      }
+    });
+
+    if (data.final_category) {
+      updateBadge(data.final_category, data.final_severity, null,
+                  data.question_count, data.max_questions);
+    }
+
+    if (isConcluded) {
+      document.getElementById('inputRow').style.display = 'none';
+      document.getElementById('sessionDoneMsg').style.display = 'block';
+    } else {
+      document.getElementById('inputRow').style.display = 'flex';
+      document.getElementById('sessionDoneMsg').style.display = 'none';
+    }
+
+    highlightSidebarItem(sid);
+    scrollBottom();
+  } catch(e) {
+    alert('Could not load session: ' + e.message);
+  }
+}
+
+// ── Delete session ─────────────────────────────────────────────────────────
+async function deleteSession(e, sid) {
+  e.stopPropagation();
+  if (!confirm('Delete this conversation?')) return;
+  await fetch(`/api/session/${sid}`, {method:'DELETE'});
+  const el = document.getElementById(`sb-${sid}`);
+  if (el) el.remove();
+  if (currentSessionId === sid) {
+    currentSessionId = null;
+    document.getElementById('inner').innerHTML = '';
+    showWelcome(true);
+    showInput(false);
+    document.getElementById('newChatBtn').style.display = 'none';
+    document.getElementById('severityBadge').className = 'severity-badge';
+  }
+}
+
+// ── Sidebar helpers ────────────────────────────────────────────────────────
+function highlightSidebarItem(sid) {
+  document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById(`sb-${sid}`);
+  if (el) el.classList.add('active');
+}
+
+// ── Keyboard handler ───────────────────────────────────────────────────────
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "bert_name": "bert-base-uncased",
+  "max_len": 128,
+  "lstm_hidden": 256,
+  "lstm_layers": 2,
+  "dropout": 0.3,
+  "num_categories": 4,
+  "num_severities": 3,
+  "cat_classes": [
+    "anxiety",
+    "depression",
+    "neutral",
+    "self_harm"
+  ],
+  "sev_classes": [
+    "high",
+    "low",
+    "medium"
+  ],
+  "best_epoch": 3,
+  "best_val_acc": 0.8394772117962467
+}
