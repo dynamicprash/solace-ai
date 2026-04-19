@@ -4,11 +4,16 @@ A full-stack mental health support chatbot following the exact architecture:
 
 ```
 Mental_health_chatbot/
-├── app.py                   ← Flask web server (routes, SSE streaming, auth)
+├── app.py                   ← Default entry: FastAPI (`uvicorn app:app`, port 8000)
+├── fastapi_app.py           ← FastAPI routes, SSE, sessions
+├── db/                      ← SQLAlchemy models, async/sync sessions, CRUD
+├── alembic/                 ← PostgreSQL migrations
+├── chat_state.py            ← Predictor + password hash + pure chat helpers
+├── app_flask.py             ← Legacy Flask server (optional: port 5000)
 ├── train.py                 ← BERT + LSTM model training
-├── predict.py               ← Predictor class (used by app.py)
+├── predict.py               ← Predictor class (used by web apps)
 ├── generate_dataset.py      ← Dataset preprocessing & label encoding
-├── suggestions.py           ← All GPT-4 logic (questions, conclusions, fact extraction)
+├── suggestions.py           ← Groq LLM: questions, conclusions, fact extraction
 ├── requirements.txt
 ├── training_report.png      ← Generated after training
 ├── datasets/
@@ -30,17 +35,17 @@ Mental_health_chatbot/
 ```
 User types message
       ↓
-Flask (app.py) receives it
+FastAPI (`app.py` / `fastapi_app.py`) receives it
       ↓
 predict.py → BERT + LSTM analyses ALL user messages so far (cumulative)
       ↓
 SSE: "analysis" event → frontend updates severity badge + progress bar
       ↓
-suggestions.py → GPT-4 generates next contextual question (streaming)
+suggestions.py → Groq generates next contextual question (streaming)
       ↓
 SSE: "token" events → words appear one by one in the chat bubble
       ↓
-After 5 questions → GPT-4 generates full assessment (markdown)
+After 5 questions → Groq generates full assessment (markdown)
       ↓
 Session saved → viewable in sidebar anytime
 ```
@@ -81,12 +86,26 @@ python train.py
 python predict.py "I haven't slept in days and feel hopeless"
 ```
 
-### Step 5 — Run the web app
+### Step 5 — PostgreSQL + migrations
+Create a database and set `DATABASE_URL` (see `.env.example`), then:
+
 ```bash
-export OPENAI_API_KEY="sk-your-key-here"
+export DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/DATABASE_NAME"
+alembic upgrade head
+```
+
+FastAPI uses **asyncpg** (`postgresql+asyncpg://…` is applied automatically). Alembic and Flask use **psycopg** (sync).
+
+### Step 6 — Run the web app (FastAPI default)
+```bash
+export DATABASE_URL="postgresql://..."
+export GROQ_API_KEY="gsk-your-key-here"
 export SECRET_KEY="any-random-string"
 python app.py
-# → Open http://localhost:5000
+# → http://localhost:8000  (OpenAPI: http://localhost:8000/docs)
+
+# Optional — legacy Flask on port 5000 (same DB):
+# python app_flask.py
 ```
 
 ---
@@ -95,8 +114,9 @@ python app.py
 
 | Variable | Description |
 |---|---|
-| `OPENAI_API_KEY` | Your OpenAI API key (`sk-...`) |
-| `SECRET_KEY` | Flask session secret (any random string) |
+| `DATABASE_URL` | PostgreSQL URL, e.g. `postgresql://user:pass@host:5432/dbname` (required for web apps) |
+| `GROQ_API_KEY` | Groq API key (`gsk_...`) — see `suggestions.py` |
+| `SECRET_KEY` | Session cookie secret (any random string) |
 
 ---
 
@@ -107,8 +127,12 @@ python app.py
 | `generate_dataset.py` | Clean CSV → processed_dataset.csv + label_encoders.pkl |
 | `train.py` | Load processed data → train BERT+LSTM → save model + report |
 | `predict.py` | Load saved model → expose `Predictor.predict(text)` |
-| `suggestions.py` | All GPT-4 calls: extract facts, stream questions, generate conclusion |
-| `app.py` | Flask routes, session management, SSE streaming, Jinja2 templates |
+| `suggestions.py` | Groq LLM: extract facts, stream questions, generate conclusion |
+| `chat_state.py` | `Predictor`, `hash_pw`, `SECRET_KEY`, pure helpers (`dominant_prediction`, …) |
+| `db/` | SQLAlchemy models (`users`, `chat_sessions`, `chat_messages`), async + sync engines |
+| `fastapi_app.py` | FastAPI routes, async DB, SSE streaming, Jinja2 |
+| `app.py` | Re-exports FastAPI `app`; `python app.py` runs uvicorn on port 8000 |
+| `app_flask.py` | Legacy Flask app (same behaviour; uses `chat_state.py`) |
 | `templates/auth.html` | Login + Register UI |
 | `templates/chat.html` | Full chat interface (sidebar, bubbles, badge, input) |
 

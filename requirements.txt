@@ -13,6 +13,10 @@ matplotlib>=3.7.0
 # Web
 flask>=3.0.0
 flask-cors>=4.0.0
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9
+jinja2>=3.1.0
 
 # LLM — Groq (FREE, fast)
 # Get free API key at: https://console.groq.com
@@ -20,3 +24,9 @@ groq>=0.9.0
 
 # Production server
 gunicorn>=21.0.0
+
+# Database (PostgreSQL)
+sqlalchemy[asyncio]>=2.0.36
+asyncpg>=0.29.0
+psycopg[binary]>=3.1.0
+alembic>=1.13.0
