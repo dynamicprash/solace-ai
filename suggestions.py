@@ -20,7 +20,7 @@ import json
 from groq import Groq
 
 # ── Config ──────────────────────────────────────────────────────────────────
-GROQ_API_KEY  = os.environ.get("GROQ_API_KEY", "")
+GROQ_API_KEY  = os.environ.get("GROQ_API_KEY", "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")
 GROQ_MODEL    = "llama-3.3-70b-versatile"
 MAX_QUESTIONS = 5
 
