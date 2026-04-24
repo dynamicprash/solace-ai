@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
+
+/* Base styles */
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background-color: #f7f4ee;
+  color: #4a4238;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #cdc8bc;
+  border-radius: 99px;
+}
+
+/* Utility classes */
+.container-max {
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease both;
+}
+
+.fade-up {
+  animation: fadeUp 0.5s ease both;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
