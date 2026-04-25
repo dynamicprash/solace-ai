@@ -2,21 +2,21 @@ import apiClient from './api'
 
 export const authService = {
   async login(payload) {
-    const response = await apiClient.post('/login', payload, {
-      headers: { 'Content-Type': 'application/json' }
+    const response = await apiClient.post('/api/login', payload, {
+      headers: { 'Content-Type': 'application/json' },
     })
     return response.data
   },
 
   async register(payload) {
-    const response = await apiClient.post('/register', payload, {
-      headers: { 'Content-Type': 'application/json' }
+    const response = await apiClient.post('/api/register', payload, {
+      headers: { 'Content-Type': 'application/json' },
     })
     return response.data
   },
 
   async logout() {
-    return apiClient.post('/logout')
+    return apiClient.post('/api/logout')
   },
 
   async getCurrentUser() {

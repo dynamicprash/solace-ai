@@ -1,40 +1,35 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { useAuthStore } from './store/authStore'
+import { authService } from './services/auth'
 import LoginPage from './components/auth/LoginPage'
 import ChatPage from './components/chat/ChatPage'
+import DashboardPage from './components/dashboard/DashboardPage'
 
 export default function App() {
+  const { setUser, setAuthenticated, isAuthenticated } = useAuthStore()
   const [isLoading, setIsLoading] = useState(true)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/sessions', {
-          credentials: 'include',
-          timeout: 5000
-        })
-        setIsAuthenticated(response.ok)
+        const response = await authService.getCurrentUser()
+        if (response.data?.ok) {
+          setUser(response.data.user)
+          setAuthenticated(true)
+        } else {
+          setAuthenticated(false)
+        }
       } catch (error) {
         console.error('Auth check error:', error)
-        setIsAuthenticated(false)
+        setAuthenticated(false)
       } finally {
         setIsLoading(false)
       }
     }
 
-    // Set timeout to prevent infinite loading
-    const timeout = setTimeout(() => {
-      if (isLoading) {
-        setIsLoading(false)
-        setIsAuthenticated(false)
-      }
-    }, 6000)
-
     checkAuth()
-    
-    return () => clearTimeout(timeout)
-  }, [])
+  }, [setUser, setAuthenticated])
 
   if (isLoading) {
     return (
@@ -55,6 +50,10 @@ export default function App() {
         <Route
           path="/chat"
           element={isAuthenticated ? <ChatPage /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/dashboard"
+          element={isAuthenticated ? <DashboardPage /> : <Navigate to="/login" />}
         />
         <Route
           path="/"

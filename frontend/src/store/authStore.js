@@ -4,6 +4,7 @@ import { authService } from '../services/auth'
 export const useAuthStore = create((set) => ({
   userId: null,
   userName: null,
+  isAuthenticated: false,
   isLoading: false,
   error: null,
 
@@ -11,8 +12,13 @@ export const useAuthStore = create((set) => ({
     set({ isLoading: true, error: null })
     try {
       const response = await authService.login(payload)
-      if (response.ok || response.redirect === '/chat') {
-        set({ isLoading: false })
+      if (response.ok) {
+        set({
+          isLoading: false,
+          isAuthenticated: true,
+          userId: response.user?.id || null,
+          userName: response.user?.name || null,
+        })
         window.location.href = '/chat'
       } else {
         set({ error: response.error || 'Login failed', isLoading: false })
@@ -29,8 +35,13 @@ export const useAuthStore = create((set) => ({
     set({ isLoading: true, error: null })
     try {
       const response = await authService.register(payload)
-      if (response.ok || response.redirect === '/chat') {
-        set({ isLoading: false })
+      if (response.ok) {
+        set({
+          isLoading: false,
+          isAuthenticated: true,
+          userId: response.user?.id || null,
+          userName: response.user?.name || null,
+        })
         window.location.href = '/chat'
       } else {
         set({ error: response.error || 'Registration failed', isLoading: false })
@@ -46,12 +57,14 @@ export const useAuthStore = create((set) => ({
   logout: async () => {
     try {
       await authService.logout()
-      set({ userId: null, userName: null })
+      set({ userId: null, userName: null, isAuthenticated: false })
       window.location.href = '/login'
     } catch (error) {
       console.error('Logout failed', error)
     }
   },
 
+  setUser: (user) => set({ userId: user.id, userName: user.name, isAuthenticated: true }),
+  setAuthenticated: (value) => set({ isAuthenticated: value }),
   setError: (error) => set({ error }),
 }))

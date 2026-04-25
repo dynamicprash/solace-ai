@@ -22,36 +22,15 @@ export default function MessageList({
 
   if (!hasStarted) {
     return (
-      <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: '28px 24px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '18px',
-      }}>
+      <div className="flex-1 overflow-y-auto p-7 flex flex-col gap-4.5">
         <WelcomeScreen userName={userName} onStart={onStart} />
       </div>
     )
   }
 
   return (
-    <div style={{
-      flex: 1,
-      overflowY: 'auto',
-      padding: '28px 24px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '18px',
-    }}>
-      <div style={{
-        maxWidth: '820px',
-        width: '100%',
-        margin: '0 auto',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '18px',
-      }}>
+    <div className="flex-1 overflow-y-auto p-7 flex flex-col gap-4.5">
+      <div className="max-w-4xl w-full mx-auto flex flex-col gap-4.5">
         {messages && messages.length > 0 ? (
           messages.map((msg, idx) => (
             <MessageBubble
@@ -62,12 +41,7 @@ export default function MessageList({
             />
           ))
         ) : (
-          <div style={{
-            textAlign: 'center',
-            color: '#a89f94',
-            padding: '40px 20px',
-            fontSize: '0.9375rem',
-          }}>
+          <div className="text-center text-stone-500 p-10 px-5 text-base">
             Start typing to begin your session...
           </div>
         )}

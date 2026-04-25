@@ -16,6 +16,7 @@ from __future__ import annotations
 import asyncio
 import json
 from contextlib import asynccontextmanager
+from datetime import datetime, timedelta, timezone
 from functools import partial
 
 from fastapi import Depends, FastAPI, Request
@@ -123,8 +124,22 @@ async def login_post(request: Request, db: AsyncSession = Depends(get_db)):
     request.session["user_id"] = str(user.id)
     request.session["user_name"] = user.display_name
     if want_json:
-        return JSONResponse({"ok": True, "redirect": "/chat"})
+        return JSONResponse(
+            {
+                "ok": True,
+                "redirect": "/chat",
+                "user": {
+                    "id": request.session["user_id"],
+                    "name": request.session["user_name"],
+                },
+            }
+        )
     return RedirectResponse("/chat", status_code=302)
+
+
+@app.post("/api/login")
+async def api_login(request: Request, db: AsyncSession = Depends(get_db)):
+    return await login_post(request, db)
 
 
 @app.get("/register")
@@ -199,14 +214,34 @@ async def register_post(request: Request, db: AsyncSession = Depends(get_db)):
     request.session["user_name"] = user.display_name
 
     if want_json:
-        return JSONResponse({"ok": True, "redirect": "/chat"}, status_code=201)
+        return JSONResponse(
+            {
+                "ok": True,
+                "redirect": "/chat",
+                "user": {
+                    "id": request.session["user_id"],
+                    "name": request.session["user_name"],
+                },
+            },
+            status_code=201,
+        )
     return RedirectResponse("/chat", status_code=302)
+
+
+@app.post("/api/register")
+async def api_register(request: Request, db: AsyncSession = Depends(get_db)):
+    return await register_post(request, db)
 
 
 @app.api_route("/logout", methods=["GET", "POST"])
 async def logout(request: Request):
     request.session.clear()
     return RedirectResponse("/login", status_code=302)
+
+
+@app.api_route("/api/logout", methods=["GET", "POST"])
+async def api_logout(request: Request):
+    return await logout(request)
 
 
 @app.get("/chat")
@@ -246,6 +281,22 @@ async def api_start(request: Request, db: AsyncSession = Depends(get_db)):
             "question_count": 0,
             "max_questions": MAX_QUESTIONS,
             "concluded": False,
+        }
+    )
+
+
+@app.get("/api/user")
+async def api_user(request: Request):
+    if not request.session.get("user_id"):
+        return JSONResponse({"ok": False}, status_code=401)
+
+    return JSONResponse(
+        {
+            "ok": True,
+            "user": {
+                "id": request.session.get("user_id"),
+                "name": request.session.get("user_name", ""),
+            },
         }
     )
 
@@ -423,9 +474,60 @@ async def api_message(request: Request):
 @app.get("/api/history")
 async def api_history(request: Request, db: AsyncSession = Depends(get_db)):
     if not request.session.get("user_id"):
-        return RedirectResponse("/login", status_code=302)
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
     rows = await crud.list_session_summaries(db, request.session["user_id"])
     return JSONResponse({"sessions": rows})
+
+
+@app.get("/api/dashboard/weekly")
+async def api_dashboard_weekly(request: Request, db: AsyncSession = Depends(get_db)):
+    if not request.session.get("user_id"):
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+
+    rows = await crud.list_session_summaries(db, request.session["user_id"])
+    now = datetime.now(timezone.utc)
+    week_days = [
+        (now - timedelta(days=i)).date() for i in range(6, -1, -1)
+    ]
+
+    weekly = []
+    for day in week_days:
+        count = 0
+        for session in rows:
+            if not session.get("created_at"):
+                continue
+            try:
+                created_date = datetime.fromisoformat(session["created_at"]).date()
+            except ValueError:
+                continue
+            if created_date == day:
+                count += 1
+        weekly.append({"day": day.isoformat(), "count": count})
+
+    severity_counts = {"high": 0, "medium": 0, "low": 0, "unknown": 0}
+    concluded = 0
+    total_sessions = len(rows)
+
+    for session in rows:
+        if session.get("concluded"):
+            concluded += 1
+        severity = (session.get("final_severity") or "unknown").lower()
+        if severity not in severity_counts:
+            severity = "unknown"
+        severity_counts[severity] += 1
+
+    return JSONResponse(
+        {
+            "sessions": rows,
+            "summary": {
+                "total_sessions": total_sessions,
+                "concluded_sessions": concluded,
+                "active_sessions": total_sessions - concluded,
+                "severity_counts": severity_counts,
+            },
+            "weekly": weekly,
+        }
+    )
 
 
 @app.get("/api/session/{session_id}")

@@ -3,63 +3,28 @@ export default function Button({
   className = '', 
   loading = false, 
   disabled = false,
+  variant = 'primary',
   ...props 
 }) {
+  const baseClasses = 'font-body font-medium flex items-center justify-center w-full transition-all mt-1 p-3.5 border rounded-2xl text-base cursor-pointer min-h-12.5 disabled:cursor-not-allowed active:scale-98'
+  const variantClasses =
+    variant === 'white'
+      ? 'bg-white text-sage-900 border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 hover:bg-slate-50'
+      : 'bg-emerald-700 text-white border-none disabled:bg-emerald-700/60 hover:bg-emerald-800'
+
   return (
     <button
       disabled={disabled || loading}
-      className="font-body font-medium text-white flex items-center justify-center w-full transition-all"
-      style={{
-        marginTop: '4px',
-        padding: '14px',
-        backgroundColor: disabled || loading ? 'rgba(58, 102, 64, 0.6)' : '#3a6640',
-        border: 'none',
-        borderRadius: '14px',
-        fontSize: '0.9375rem',
-        cursor: disabled || loading ? 'not-allowed' : 'pointer',
-        minHeight: '50px',
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled && !loading) {
-          e.currentTarget.style.backgroundColor = '#2e5133';
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled && !loading) {
-          e.currentTarget.style.backgroundColor = '#3a6640';
-        }
-      }}
-      onMouseDown={(e) => {
-        if (!disabled && !loading) {
-          e.currentTarget.style.transform = 'scale(0.98)';
-        }
-      }}
-      onMouseUp={(e) => {
-        e.currentTarget.style.transform = 'scale(1)';
-      }}
+      className={`${baseClasses} ${variantClasses} ${className}`}
       {...props}
     >
       {loading ? (
         <div className="flex items-center justify-center gap-2">
-          <div 
-            style={{
-              width: '20px',
-              height: '20px',
-              border: '2.5px solid rgba(255, 255, 255, 0.3)',
-              borderTopColor: 'white',
-              borderRadius: '50%',
-              animation: 'spin 0.7s linear infinite',
-            }} 
-          />
+          <div className="w-5 h-5 border-2.5 border-current/30 border-t-current rounded-full animate-spin" />
         </div>
       ) : (
         children
       )}
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </button>
   )
 }

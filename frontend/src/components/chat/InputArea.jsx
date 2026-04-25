@@ -36,22 +36,10 @@ export default function InputArea({
 
   if (isConcluded) {
     return (
-      <div style={{
-        padding: '16px 24px 20px',
-        background: '#fdfcf9',
-        borderTop: '1px solid #e4e0d8',
-        flexShrink: 0,
-      }}>
-        <div style={{
-          maxWidth: '820px',
-          margin: '0 auto',
-          textAlign: 'center',
-          color: '#958c7a',
-          fontSize: '0.9rem',
-          padding: '14px',
-        }}>
+      <div className="p-4 px-6 pb-5 bg-warm-white border-t border-stone-300 flex-shrink-0">
+        <div className="max-w-4xl mx-auto text-center text-stone-600 text-sm p-3.5">
           <strong>Session Concluded</strong>
-          <p style={{ marginTop: '8px', fontSize: '0.875rem' }}>
+          <p className="mt-2 text-xs">
             Thank you for sharing. You can start a new chat or review your previous conversations.
           </p>
         </div>
@@ -60,32 +48,9 @@ export default function InputArea({
   }
 
   return (
-    <div style={{
-      padding: '16px 24px 20px',
-      background: '#fdfcf9',
-      borderTop: '1px solid #e4e0d8',
-      flexShrink: 0,
-    }}>
-      <div style={{ maxWidth: '820px', margin: '0 auto' }}>
-        <div style={{
-          display: 'flex',
-          gap: '10px',
-          alignItems: 'flex-end',
-          background: '#f7f4ee',
-          border: '1.5px solid #cdc8bc',
-          borderRadius: '22px',
-          padding: '10px 10px 10px 18px',
-          transition: 'border-color 0.2s, box-shadow 0.2s',
-        }}
-        onFocus={(e) => {
-          if (!e.currentTarget.contains(document.activeElement)) return
-          e.currentTarget.style.borderColor = '#6a9e69'
-          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(106, 158, 105, 0.1)'
-        }}
-        onBlur={(e) => {
-          e.currentTarget.style.borderColor = '#cdc8bc'
-          e.currentTarget.style.boxShadow = 'none'
-        }}>
+    <div className="p-4 px-6 pb-5 bg-warm-white border-t border-stone-300 flex-shrink-0">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex gap-2.5 items-end bg-cream border-2 border-stone-400 rounded-3xl p-2.5 pl-4.5 transition-all duration-200 focus-within:border-sage-600 focus-within:ring-2 focus-within:ring-sage-600/10">
           <textarea
             ref={textareaRef}
             value={message}
@@ -93,87 +58,31 @@ export default function InputArea({
             onKeyDown={handleKeyDown}
             placeholder="Share your thoughts..."
             disabled={isLoading}
-            style={{
-              flex: 1,
-              border: 'none',
-              background: 'transparent',
-              fontFamily: 'var(--font-body)',
-              fontSize: '0.9375rem',
-              color: '#4a4238',
-              outline: 'none',
-              resize: 'none',
-              maxHeight: '140px',
-              overflowY: 'auto',
-              lineHeight: '1.6',
-              minHeight: '24px',
-              opacity: isLoading ? 0.6 : 1,
-            }}
+            className="flex-1 border-none bg-transparent font-body text-base text-stone-800 outline-none resize-none max-h-35 overflow-y-auto leading-relaxed min-h-6 disabled:opacity-60"
           />
           <button
             onClick={handleSend}
             disabled={isLoading || !message.trim()}
-            style={{
-              width: '38px',
-              height: '38px',
-              background: '#3a6640',
-              color: 'white',
-              border: 'none',
-              borderRadius: '50%',
-              fontSize: '1.1rem',
-              cursor: isLoading || !message.trim() ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              transition: 'all 0.2s',
-              opacity: isLoading || !message.trim() ? 0.6 : 1,
-            }}
-            onMouseEnter={(e) => {
-              if (!isLoading && message.trim()) {
-                e.currentTarget.style.background = '#2e5133'
-                e.currentTarget.style.transform = 'scale(1.05)'
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#3a6640'
-              e.currentTarget.style.transform = 'scale(1)'
-            }}
+            className="w-9.5 h-9.5 bg-sage-700 text-white border-none rounded-full text-lg cursor-pointer disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0 transition-all duration-200 disabled:opacity-60 hover:bg-sage-800 hover:scale-105 disabled:hover:bg-sage-700 disabled:hover:scale-100"
             title="Send message (Enter)"
           >
             {isLoading ? '⟳' : '→'}
           </button>
         </div>
         
-        <div style={{
-          marginTop: '7px',
-          fontSize: '0.71875rem',
-          color: '#a89f94',
-          textAlign: 'center',
-        }}>
-          <kbd style={{
-            background: '#e4e0d8',
-            borderRadius: '3px',
-            padding: '1px 5px',
-            fontFamily: 'monospace',
-            fontSize: '0.6875rem',
-          }}>
+        <div className="mt-1.5 text-xs text-stone-500 text-center">
+          <kbd className="bg-stone-300 rounded px-1.5 py-0.5 font-mono text-xs">
             Enter
           </kbd>
           {' to send • '}
-          <kbd style={{
-            background: '#e4e0d8',
-            borderRadius: '3px',
-            padding: '1px 5px',
-            fontFamily: 'monospace',
-            fontSize: '0.6875rem',
-          }}>
+          <kbd className="bg-stone-300 rounded px-1.5 py-0.5 font-mono text-xs">
             Shift+Enter
           </kbd>
           {' for new line'}
           {remainingQuestions < maxQuestions && (
             <>
               {' • '}
-              <span style={{ color: questionCount > maxQuestions * 0.8 ? '#c0444a' : '#a89f94' }}>
+              <span className={questionCount > maxQuestions * 0.8 ? 'text-red-600' : 'text-stone-500'}>
                 {remainingQuestions} questions left
               </span>
             </>

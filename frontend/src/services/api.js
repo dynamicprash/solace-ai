@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE_URL = import.meta.env.DEV
+  ? ''
+  : import.meta.env.VITE_API_URL || ''
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -14,9 +16,7 @@ const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      window.location.href = '/login'
-    }
+    // Let the app handle 401s explicitly, especially the auth check at startup.
     return Promise.reject(error)
   }
 )

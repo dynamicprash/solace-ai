@@ -43,52 +43,52 @@ export default function LoginPage({ mode: initialMode = 'login' }) {
       </div>
 
       {/* Card */}
-      <div className="relative z-10 bg-warm-white border border-stone-200 rounded-3xl w-full max-w-96 animate-fadeUp shadow-card" style={{ padding: '48px 44px 40px' }}>
+      <div className="relative z-10 bg-white border border-slate-200 rounded-3xl w-full max-w-96 animate-fadeUp shadow-xl p-12 px-11 pb-10">
         {/* Logo */}
-        <div className="text-center" style={{ marginBottom: '36px' }}>
-          <div className="text-5xl" style={{ marginBottom: '10px' }}>🌿</div>
-          <h1 className="font-display font-bold text-sage-700" style={{ fontSize: '2rem', letterSpacing: '-0.02em', marginBottom: '6px' }}>
+        <div className="text-center mb-9">
+          <div className="text-5xl mb-2.5">🌿</div>
+          <h1 className="font-display font-bold text-sage-700 text-2xl tracking-tight mb-1.5">
             Mindful
           </h1>
-          <p className="text-stone-500 italic" style={{ fontSize: '0.875rem' }}>
+          <p className="text-stone-500 italic text-sm">
             Your safe space to be heard
           </p>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 rounded-md p-1" style={{ backgroundColor: '#f2f0ec', marginBottom: '28px' }}>
+        <div className="flex gap-1 rounded-md p-1 bg-slate-100 mb-7">
           <button
             onClick={() => handleTabSwitch('login')}
-            className={`flex-1 py-2.5 px-4 rounded font-body font-medium transition-all ${
+            className={`flex-1 py-2.5 px-4 rounded font-body font-medium transition-all text-sm ${
               isLogin 
-                ? 'bg-warm-white text-sage-700 shadow-tab' 
-                : 'bg-transparent text-stone-500'
+                ? 'bg-white text-sage-700 shadow-tab' 
+                : 'bg-transparent text-stone-500 hover:text-sage-700'
             }`}
-            style={{ fontSize: '0.875rem' }}
           >
             Sign In
           </button>
           <button
             onClick={() => handleTabSwitch('register')}
-            className={`flex-1 py-2.5 px-4 rounded font-body font-medium transition-all ${
+            className={`flex-1 py-2.5 px-4 rounded font-body font-medium transition-all text-sm ${
               !isLogin 
-                ? 'bg-warm-white text-sage-700 shadow-tab' 
-                : 'bg-transparent text-stone-500'
+                ? 'bg-white text-sage-700 shadow-tab' 
+                : 'bg-transparent text-stone-500 hover:text-sage-700'
             }`}
-            style={{ fontSize: '0.875rem' }}
           >
             Create Account
           </button>
         </div>
 
         {/* Forms */}
-        {isLogin ? <LoginForm /> : <RegisterForm />}
+        <div key={mode} className="animate-fadeIn">
+          {isLogin ? <LoginForm /> : <RegisterForm />}
+        </div>
 
         {/* Disclaimer */}
-        <p className="font-body text-center leading-relaxed" style={{ marginTop: '24px', fontSize: '0.78125rem', color: '#a89f94' }}>
+        <p className="font-body text-center leading-relaxed mt-6 text-xs text-stone-500">
           This is a supportive tool, not a substitute for professional mental health care.
           <br />
-          If you're in crisis, please call <strong style={{ color: '#958c7a' }}>988</strong>.
+          If you're in crisis, please call <strong className="text-stone-600">988</strong>.
         </p>
       </div>
     </div>

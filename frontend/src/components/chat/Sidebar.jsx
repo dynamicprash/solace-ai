@@ -1,12 +1,18 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useChatStore } from '../../store/chatStore'
 import { useAuthStore } from '../../store/authStore'
-import api from '../../services/api'
+import { chatService } from '../../services/chat'
 
 export default function Sidebar({ isOpen, onNewChat, onSelectSession }) {
-  const { pastSessions, currentSessionId } = useChatStore()
+  const navigate = useNavigate()
+  const { pastSessions, currentSessionId, loadSessions, resetChat } = useChatStore()
   const { userName, logout } = useAuthStore()
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    loadSessions()
+  }, [loadSessions])
 
   const handleNewChat = async () => {
     onNewChat()
@@ -19,252 +25,123 @@ export default function Sidebar({ isOpen, onNewChat, onSelectSession }) {
   const handleDeleteSession = async (sessionId, e) => {
     e.stopPropagation()
     try {
-      await api.delete(`/chat/session/${sessionId}`)
-      // Reload sessions
-      const response = await api.get('/chat/sessions')
-      useChatStore.setState({ pastSessions: response.data })
+      await chatService.deleteSession(sessionId)
+      if (currentSessionId === sessionId) {
+        resetChat()
+      }
+      await loadSessions()
     } catch (error) {
       console.error('Delete session error:', error)
     }
   }
 
-  // Get user initials for avatar
   const getInitials = (name) => {
-    return name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'
+    return name?.split(' ').map((n) => n[0]).join('').toUpperCase() || 'U'
+  }
+
+  const severityClass = (severity) => {
+    if (!severity) return 'bg-emerald-300'
+    const value = severity.toLowerCase()
+    return value === 'high'
+      ? 'bg-red-500'
+      : value === 'medium'
+      ? 'bg-yellow-400'
+      : 'bg-emerald-300'
   }
 
   return (
-    <div style={{
-      width: '260px',
-      height: '100vh',
-      background: '#1e3121',
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden',
-      transition: 'width 0.25s, opacity 0.25s',
-      opacity: isOpen ? 1 : 0,
-      ...(!isOpen && { width: 0, pointerEvents: 'none' })
-    }}>
-      {/* Logo Header */}
-      <div style={{
-        padding: '22px 18px 16px',
-        borderBottom: '1px solid rgba(255,255,255,0.07)',
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-        }}>
-          <span style={{ fontSize: '1.25em' }}>🌿</span>
-          <span style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '1.25rem',
-            color: '#c5d9c4',
-            fontWeight: '500',
-          }}>Mindful</span>
+    <div className={`h-screen bg-emerald-950 text-white flex flex-col overflow-hidden transition-all duration-300 ${
+      isOpen ? 'w-64 opacity-100 min-w-[16rem]' : 'w-0 opacity-0 min-w-0 pointer-events-none'
+    }`}>
+      <div className="p-5 pb-4 border-b border-emerald-900">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">🌿</span>
+          <span className="font-display text-xl text-sage-200 font-medium">
+            Mindful
+          </span>
         </div>
       </div>
 
-      {/* New Chat Button */}
-      <button
-        onClick={handleNewChat}
-        style={{
-          margin: '14px 14px 8px',
-          padding: '11px 16px',
-          background: 'rgba(255,255,255,0.08)',
-          border: '1.5px dashed rgba(255,255,255,0.2)',
-          borderRadius: '14px',
-          color: '#c5d9c4',
-          fontFamily: 'var(--font-body)',
-          fontSize: '0.875rem',
-          fontWeight: '500',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          width: 'calc(100% - 28px)',
-          transition: 'all 0.2s',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'rgba(255,255,255,0.13)'
-          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
-          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'
-        }}
-      >
-        <span style={{ fontSize: '1.1em' }}>+</span>
-        New Chat
-      </button>
+      <div className="mx-3.5 my-3.5 space-y-3">
+        <button
+          onClick={handleNewChat}
+          className="w-full p-3 bg-emerald-600 text-white rounded-xl text-sm font-body font-medium cursor-pointer flex items-center gap-2 hover:bg-emerald-700 transition-all border border-emerald-600"
+          style={{ backgroundColor: '#2f7a4e' }}
+        >
+          <span className="text-base">+</span>
+          New Chat
+        </button>
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="w-full p-3 bg-emerald-600 text-white rounded-xl text-sm font-body font-medium hover:bg-emerald-700 transition-all border border-emerald-600"
+          style={{ backgroundColor: '#2f7a4e' }}
+        >
+          Dashboard
+        </button>
+      </div>
 
-      {/* Session List */}
-      <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: '0 8px',
-      }}>
+      <div className="flex-1 overflow-y-auto px-2">
         {pastSessions && pastSessions.length > 0 ? (
           <>
-            <div style={{
-              fontSize: '0.6875rem',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              color: 'rgba(255,255,255,0.3)',
-              padding: '8px 10px 6px',
-              fontWeight: '500',
-            }}>
+            <div className="text-xs uppercase tracking-wider text-white/60 px-2.5 py-2 pb-1.5 font-medium">
               Recent Chats
             </div>
-            {pastSessions.map((session) => (
-              <div
-                key={session.id}
-                onClick={() => onSelectSession(session.id)}
-                style={{
-                  padding: '10px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  marginBottom: '2px',
-                  background: currentSessionId === session.id ? 'rgba(106,158,105,0.2)' : 'transparent',
-                  transition: 'background 0.15s',
-                }}
-                onMouseEnter={(e) => {
-                  if (currentSessionId !== session.id) {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (currentSessionId !== session.id) {
-                    e.currentTarget.style.background = 'transparent'
-                  }
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '4px' }}>
-                  <div style={{
-                    width: '7px',
-                    height: '7px',
-                    borderRadius: '50%',
-                    background: session.severity === 'high' ? '#c0444a' : session.severity === 'medium' ? '#c9843a' : '#6a9e69',
-                    flexShrink: 0,
-                  }} />
-                  <div style={{
-                    flex: 1,
-                    fontSize: '0.8125rem',
-                    color: 'rgba(255,255,255,0.8)',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}>
-                    {session.title || 'Untitled Chat'}
+            {pastSessions.map((session) => {
+              const severity = session.final_severity || session.severity
+              return (
+                <div
+                  key={session.session_id}
+                  onClick={() => onSelectSession(session.session_id)}
+                  className={`p-2.5 rounded-lg cursor-pointer mb-0.5 transition-colors ${
+                    currentSessionId === session.session_id
+                      ? 'bg-emerald-900/40 border border-emerald-800'
+                      : 'hover:bg-emerald-950/40'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${severityClass(severity)}`} />
+                    <div className="flex-1 text-sm text-white whitespace-nowrap overflow-hidden text-ellipsis">
+                      {session.title || 'Untitled Chat'}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2.5 h-2.5 rounded-full ${severityClass(severity)}`} />
+                      <button
+                        onClick={(e) => handleDeleteSession(session.session_id, e)}
+                        className={`bg-none border-none text-white/20 cursor-pointer text-base p-0 rounded hover:text-red-300/70 transition-colors ${
+                          currentSessionId === session.session_id ? 'block' : 'hidden'
+                        }`}
+                        title="Delete chat"
+                      >
+                        ×
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={(e) => handleDeleteSession(session.id, e)}
-                    style={{
-                      marginLeft: 'auto',
-                      background: 'none',
-                      border: 'none',
-                      color: 'rgba(255,255,255,0.2)',
-                      cursor: 'pointer',
-                      fontSize: '1rem',
-                      display: currentSessionId === session.id ? 'block' : 'none',
-                      padding: 0,
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = 'rgba(255,100,100,0.7)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = 'rgba(255,255,255,0.2)'
-                    }}
-                  >
-                    ×
-                  </button>
+                  <div className="flex items-center gap-1.5 text-xs text-white/50 pl-5.5">
+                    <span>{new Date(session.created_at).toLocaleDateString()}</span>
+                  </div>
                 </div>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  fontSize: '0.6875rem',
-                  color: 'rgba(255,255,255,0.3)',
-                  paddingLeft: '22px',
-                }}>
-                  <span>{new Date(session.created_at).toLocaleDateString()}</span>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </>
         ) : (
-          <div style={{
-            padding: '20px 10px',
-            fontSize: '0.875rem',
-            color: 'rgba(255,255,255,0.3)',
-            textAlign: 'center',
-          }}>
+          <div className="p-5 px-2.5 text-sm text-white/50 text-center">
             No chats yet
           </div>
         )}
       </div>
 
-      {/* User Footer */}
-      <div style={{
-        padding: '14px',
-        borderTop: '1px solid rgba(255,255,255,0.07)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-      }}>
-        <div style={{
-          width: '32px',
-          height: '32px',
-          borderRadius: '50%',
-          background: '#3a6640',
-          color: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '0.875rem',
-          fontWeight: '600',
-          flexShrink: 0,
-        }}>
+      <div className="p-3.5 border-t border-white/10 flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-full bg-sage-600 text-white flex items-center justify-center text-sm font-semibold flex-shrink-0">
           {getInitials(userName)}
         </div>
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          minWidth: 0,
-        }}>
-          <div style={{
-            fontSize: '0.8125rem',
-            fontWeight: '500',
-            color: 'rgba(255,255,255,0.85)',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}>
+        <div className="flex-1 flex items-center gap-2.5 min-w-0">
+          <div className="text-sm font-medium text-white/85 whitespace-nowrap overflow-hidden text-ellipsis">
             {userName}
           </div>
         </div>
         <button
           onClick={handleLogout}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'rgba(255,255,255,0.3)',
-            fontSize: '1.1rem',
-            cursor: 'pointer',
-            padding: '4px 6px',
-            borderRadius: '8px',
-            transition: 'all 0.2s',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
-            e.currentTarget.style.color = 'rgba(255,255,255,0.6)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'none'
-            e.currentTarget.style.color = 'rgba(255,255,255,0.3)'
-          }}
+          className="bg-none border-none text-white/30 text-lg cursor-pointer p-1 rounded-lg hover:bg-white/8 hover:text-white/60 transition-all"
           title="Logout"
         >
           ⎋

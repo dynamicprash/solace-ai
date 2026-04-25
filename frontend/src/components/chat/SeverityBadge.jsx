@@ -2,77 +2,42 @@ export default function SeverityBadge({ severity, category, confidence, visible 
   if (!visible || !severity) return null
 
   const severityConfig = {
-    high: { color: '#c0444a', bg: '#fef9f9', icon: '⚠️', label: 'HIGH' },
-    medium: { color: '#c9843a', bg: '#fefaf5', icon: '📌', label: 'MEDIUM' },
-    low: { color: '#6a9e69', bg: '#f6faf6', icon: '✓', label: 'LOW' },
+    high: { color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-600/30', progress: 'bg-red-600', icon: '⚠️', label: 'HIGH' },
+    medium: { color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-600/30', progress: 'bg-orange-600', icon: '📌', label: 'MEDIUM' },
+    low: { color: 'text-sage-600', bg: 'bg-green-50', border: 'border-sage-600/30', progress: 'bg-sage-600', icon: '✓', label: 'LOW' },
   }
 
   const config = severityConfig[severity] || severityConfig.low
 
   return (
-    <div style={{
-      background: config.bg,
-      border: `1.5px solid rgba(${severity === 'high' ? '192,68,74' : severity === 'medium' ? '201,132,58' : '106,158,105'},0.3)`,
-      borderRadius: '14px',
-      padding: '10px 14px',
-      display: 'block',
-      animation: 'fadeIn 0.3s ease both',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-        <div style={{ fontSize: '1rem' }}>{config.icon}</div>
-        <div style={{ flex: 1 }}>
-          <div style={{
-            fontSize: '0.8125rem',
-            fontWeight: '500',
-            color: '#4a4238',
-          }}>
+    <div className={`${config.bg} border-2 ${config.border} rounded-2xl p-2.5 px-3.5 block animate-fadeIn`}>
+      <div className="flex items-center gap-2 mb-2">
+        <div className="text-lg">{config.icon}</div>
+        <div className="flex-1">
+          <div className="text-sm font-medium text-stone-800">
             {category || 'Emotional Support Needed'}
           </div>
         </div>
       </div>
 
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-      }}>
-        <div style={{
-          fontSize: '0.6875rem',
-          fontWeight: '500',
-          textTransform: 'uppercase',
-          letterSpacing: '0.06em',
-          color: config.color,
-        }}>
+      <div className="flex items-center gap-2">
+        <div className={`text-xs font-medium uppercase tracking-wider ${config.color}`}>
           {config.label}
         </div>
         {confidence && (
-          <div style={{
-            fontSize: '0.6875rem',
-            color: '#a89f94',
-            background: '#f2f0ec',
-            padding: '2px 7px',
-            borderRadius: '99px',
-          }}>
+          <div className="text-xs text-stone-500 bg-stone-200 px-1.5 py-0.5 rounded-full">
             {Math.round(confidence * 100)}% confidence
           </div>
         )}
       </div>
 
       {/* Progress bar */}
-      <div style={{ marginTop: '8px' }}>
-        <div style={{
-          height: '5px',
-          background: '#e4e0d8',
-          borderRadius: '99px',
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            height: '100%',
-            background: '#6a9e69',
-            borderRadius: '99px',
-            transition: 'width 0.5s ease',
-            width: `${(confidence || 0) * 100}%`,
-          }} />
+      <div className="mt-2">
+        <div className="h-1.25 bg-stone-300 rounded-full overflow-hidden">
+          <div 
+            className={`h-full ${config.progress} rounded-full transition-all duration-500 ease-out`}
+            style={{ width: `${(confidence || 0) * 100}%` }}
+          />
         </div>
       </div>
     </div>

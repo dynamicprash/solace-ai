@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useChatStore } from '../../store/chatStore'
 import { useAuthStore } from '../../store/authStore'
-import api from '../../services/api'
+import { chatService } from '../../services/chat'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import MessageList from './MessageList'
@@ -11,39 +11,43 @@ import InputArea from './InputArea'
 export default function ChatPage() {
   const navigate = useNavigate()
   const { userName } = useAuthStore()
-  const { 
-    messages, 
-    currentSessionId, 
+  const {
+    messages,
+    currentSessionId,
     isStreaming,
     isConcluded,
     questionCount,
     currentAnalysis,
-    pastSessions,
+    loadSessions,
   } = useChatStore()
 
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [hasStarted, setHasStarted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  // Check if user is authenticated
   useEffect(() => {
     if (!userName) {
       navigate('/login')
     }
   }, [userName, navigate])
 
+  useEffect(() => {
+    loadSessions()
+  }, [loadSessions])
+
   const handleNewChat = async () => {
     try {
       setIsLoading(true)
-      const response = await api.post('/chat/session')
+      const response = await chatService.startNewSession()
       useChatStore.setState({
-        currentSessionId: response.data.session_id,
-        messages: [],
+        currentSessionId: response.session_id,
+        messages: [{ role: 'bot', content: response.message }],
         isStreaming: false,
-        isConcluded: false,
-        questionCount: 0,
+        isConcluded: response.concluded || false,
+        questionCount: response.question_count || 0,
         currentAnalysis: null,
       })
+      await loadSessions()
       setHasStarted(true)
     } catch (error) {
       console.error('Failed to create session:', error)
@@ -55,14 +59,18 @@ export default function ChatPage() {
   const handleSelectSession = async (sessionId) => {
     try {
       setIsLoading(true)
-      const response = await api.get(`/chat/session/${sessionId}`)
+      const response = await chatService.getSession(sessionId)
       useChatStore.setState({
         currentSessionId: sessionId,
-        messages: response.data.messages || [],
+        messages: response.history || [],
         isStreaming: false,
-        isConcluded: response.data.concluded || false,
-        questionCount: response.data.question_count || 0,
-        currentAnalysis: response.data.analysis || null,
+        isConcluded: response.concluded || false,
+        questionCount: response.question_count || 0,
+        currentAnalysis: {
+          severity: response.final_severity,
+          category: response.final_category,
+          confidence: null,
+        },
       })
       setHasStarted(true)
     } catch (error) {
@@ -73,50 +81,57 @@ export default function ChatPage() {
   }
 
   const handleSendMessage = async (messageText) => {
-    if (!currentSessionId) return
+    if (!currentSessionId || !messageText.trim()) return
+
+    const userMessage = { role: 'user', content: messageText }
+    const botPlaceholder = { role: 'bot', content: '' }
+
+    useChatStore.setState({
+      messages: [...messages, userMessage, botPlaceholder],
+      isStreaming: true,
+    })
+    setIsLoading(true)
 
     try {
-      // Add user message to store
-      useChatStore.setState({
-        messages: [...messages, { role: 'user', content: messageText }],
-      })
+      await chatService.sendMessage(currentSessionId, messageText, (event) => {
+        if (event.type === 'analysis') {
+          useChatStore.setState({
+            currentAnalysis: {
+              severity: event.severity,
+              category: event.category,
+              confidence: event.sev_conf,
+            },
+            questionCount: event.question_count,
+          })
+          return
+        }
 
-      setIsLoading(true)
-      useChatStore.setState({ isStreaming: true })
+        if (event.type === 'token') {
+          const currentMessages = useChatStore.getState().messages
+          const lastMessage = currentMessages[currentMessages.length - 1]
+          if (!lastMessage || lastMessage.role !== 'bot') return
+          const updated = [
+            ...currentMessages.slice(0, -1),
+            { ...lastMessage, content: `${lastMessage.content}${event.content}` },
+          ]
+          useChatStore.setState({ messages: updated })
+          return
+        }
 
-      // Send message to backend
-      const response = await api.post(`/chat/message`, {
-        session_id: currentSessionId,
-        message: messageText,
-      })
+        if (event.type === 'done') {
+          useChatStore.setState({
+            isStreaming: false,
+            isConcluded: event.concluded || false,
+            questionCount: event.question_count || questionCount,
+          })
+          return
+        }
 
-      // Update with bot response
-      const updatedMessages = [
-        ...messages,
-        { role: 'user', content: messageText },
-      ]
-
-      if (response.data.response) {
-        updatedMessages.push({
-          role: 'bot',
-          content: response.data.response,
-        })
-      }
-
-      if (response.data.analysis) {
-        updatedMessages.push({
-          role: 'bot',
-          content: response.data.analysis,
-          isConclusion: response.data.concluded,
-        })
-      }
-
-      useChatStore.setState({
-        messages: updatedMessages,
-        isStreaming: false,
-        isConcluded: response.data.concluded || false,
-        questionCount: response.data.question_count || questionCount + 1,
-        currentAnalysis: response.data.analysis || null,
+        if (event.type === 'error') {
+          useChatStore.setState({ isStreaming: false })
+          console.error('Chat error:', event.message)
+          return
+        }
       })
     } catch (error) {
       console.error('Failed to send message:', error)
@@ -127,28 +142,14 @@ export default function ChatPage() {
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      height: '100vh',
-      overflow: 'hidden',
-      background: '#f7f4ee',
-    }}>
-      {/* Sidebar */}
+    <div className="flex h-screen overflow-hidden bg-cream">
       <Sidebar
         isOpen={sidebarOpen}
         onNewChat={handleNewChat}
         onSelectSession={handleSelectSession}
       />
 
-      {/* Main Area */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        minWidth: 0,
-        height: '100vh',
-      }}>
-        {/* Topbar */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen">
         {hasStarted && (
           <Topbar
             isSidebarOpen={sidebarOpen}
@@ -160,7 +161,6 @@ export default function ChatPage() {
           />
         )}
 
-        {/* Messages Area */}
         <MessageList
           messages={messages}
           isStreaming={isStreaming}
@@ -169,7 +169,6 @@ export default function ChatPage() {
           onStart={handleNewChat}
         />
 
-        {/* Input Area */}
         {hasStarted && (
           <InputArea
             onSendMessage={handleSendMessage}

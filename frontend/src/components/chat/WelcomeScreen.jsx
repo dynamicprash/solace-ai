@@ -1,99 +1,32 @@
 export default function WelcomeScreen({ userName, onStart }) {
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      textAlign: 'center',
-      padding: '48px 24px',
-      animation: 'fadeUp 0.5s ease both',
-      maxWidth: '500px',
-      margin: 'auto',
-    }}>
-      <div style={{ fontSize: '3.5rem', marginBottom: '20px' }}>🌿</div>
+    <div className="flex flex-col items-center text-center p-12 px-6 animate-fadeUp max-w-md mx-auto">
+      <div className="text-6xl mb-5">🌿</div>
       
-      <h1 style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: '2rem',
-        color: '#263f2a',
-        marginBottom: '14px',
-        letterSpacing: '-0.02em',
-      }}>
+      <h1 className="font-display text-3xl text-sage-900 mb-3.5 tracking-tight">
         Welcome, {userName}
       </h1>
 
-      <p style={{
-        color: '#958c7a',
-        fontSize: '0.9375rem',
-        lineHeight: '1.7',
-        marginBottom: '28px',
-      }}>
+      <p className="text-stone-600 text-base leading-relaxed mb-7">
         Start a new session to share what's on your mind. 
         This is a safe, judgment-free space where your thoughts and feelings matter.
       </p>
 
       {/* Features */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '10px',
-        marginBottom: '32px',
-        width: '100%',
-        maxWidth: '360px',
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          background: '#fdfcf9',
-          border: '1px solid #e4e0d8',
-          borderRadius: '14px',
-          padding: '10px 14px',
-          fontSize: '0.8125rem',
-          color: '#786e5c',
-        }}>
+      <div className="grid grid-cols-2 gap-2.5 mb-8 w-full max-w-90">
+        <div className="flex items-center gap-2 bg-warm-white border border-stone-300 rounded-2xl p-2.5 px-3.5 text-sm text-stone-700">
           <span>🔒</span>
           <span>Private</span>
         </div>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          background: '#fdfcf9',
-          border: '1px solid #e4e0d8',
-          borderRadius: '14px',
-          padding: '10px 14px',
-          fontSize: '0.8125rem',
-          color: '#786e5c',
-        }}>
+        <div className="flex items-center gap-2 bg-warm-white border border-stone-300 rounded-2xl p-2.5 px-3.5 text-sm text-stone-700">
           <span>🤝</span>
           <span>Supportive</span>
         </div>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          background: '#fdfcf9',
-          border: '1px solid #e4e0d8',
-          borderRadius: '14px',
-          padding: '10px 14px',
-          fontSize: '0.8125rem',
-          color: '#786e5c',
-        }}>
+        <div className="flex items-center gap-2 bg-warm-white border border-stone-300 rounded-2xl p-2.5 px-3.5 text-sm text-stone-700">
           <span>💬</span>
           <span>Real-time</span>
         </div>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          background: '#fdfcf9',
-          border: '1px solid #e4e0d8',
-          borderRadius: '14px',
-          padding: '10px 14px',
-          fontSize: '0.8125rem',
-          color: '#786e5c',
-        }}>
+        <div className="flex items-center gap-2 bg-warm-white border border-stone-300 rounded-2xl p-2.5 px-3.5 text-sm text-stone-700">
           <span>📊</span>
           <span>Analytics</span>
         </div>
@@ -102,46 +35,16 @@ export default function WelcomeScreen({ userName, onStart }) {
       {/* Start Button */}
       <button
         onClick={onStart}
-        style={{
-          padding: '15px 40px',
-          background: '#3a6640',
-          color: 'white',
-          border: 'none',
-          borderRadius: '22px',
-          fontFamily: 'var(--font-body)',
-          fontSize: '1rem',
-          fontWeight: '500',
-          cursor: 'pointer',
-          minWidth: '220px',
-          minHeight: '52px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 4px 16px rgba(74, 128, 80, 0.25)',
-          transition: 'all 0.2s',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = '#2e5133'
-          e.currentTarget.style.transform = 'translateY(-1px)'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = '#3a6640'
-          e.currentTarget.style.transform = 'translateY(0)'
-        }}
+        className="p-3.75 px-10 bg-emerald-700 text-white border-none rounded-3xl font-body text-lg font-medium cursor-pointer min-w-55 min-h-13 flex items-center justify-center shadow-tab transition-all duration-200 hover:bg-emerald-800 hover:-translate-y-0.5"
       >
         Start Conversation
       </button>
 
       {/* Disclaimer */}
-      <p style={{
-        marginTop: '24px',
-        fontSize: '0.78125rem',
-        color: '#a89f94',
-        lineHeight: '1.5',
-      }}>
+      <p className="mt-6 text-xs text-stone-500 leading-relaxed">
         This is a supportive tool, not a substitute for professional mental health care.
         <br />
-        If you're in crisis, please call <strong style={{ color: '#958c7a' }}>988</strong>.
+        If you're in crisis, please call <strong className="text-stone-600">988</strong>.
       </p>
     </div>
   )

@@ -6,49 +6,15 @@ export default function MessageBubble({ message, isUser, isConclusion }) {
 
   if (isConclusion) {
     return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'flex-end',
-        gap: '10px',
-        animation: 'fadeUp 0.3s ease both',
-      }}>
-        <div style={{
-          width: '34px',
-          height: '34px',
-          borderRadius: '50%',
-          background: '#e4ede4',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '1rem',
-          flexShrink: 0,
-          border: '1.5px solid #c5d9c4',
-        }}>
+      <div className="flex items-end gap-2.5 animate-fadeUp">
+        <div className="w-8.5 h-8.5 rounded-full bg-green-100 flex items-center justify-center text-lg flex-shrink-0 border-2 border-green-300">
           🤖
         </div>
-        <div style={{
-          maxWidth: 'min(620px, 90%)',
-          padding: '14px 18px',
-          borderRadius: '22px',
-          borderBottomLeftRadius: '4px',
-          lineHeight: '1.65',
-          fontSize: '0.9375rem',
-          background: 'linear-gradient(135deg, #f8faf8 0%, #f4f7f2 100%)',
-          border: '1.5px solid #9abf99',
-        }}>
-          <div style={{
-            fontSize: '0.78125rem',
-            fontWeight: '600',
-            color: '#3a6640',
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-            marginBottom: '10px',
-            paddingBottom: '10px',
-            borderBottom: '1px solid #9abf99',
-          }}>
+        <div className="max-w-[min(620px,90%)] p-3.5 px-4.5 rounded-3xl rounded-bl text-base leading-relaxed bg-gradient-to-br from-green-50 to-green-100 border-2 border-sage-400">
+          <div className="text-xs font-semibold text-sage-700 uppercase tracking-wider mb-2.5 pb-2.5 border-b border-sage-400">
             Session Summary
           </div>
-          <div dangerouslySetInnerHTML={{ __html: message }} style={{ color: '#4a4238' }} />
+          <div dangerouslySetInnerHTML={{ __html: message }} className="text-stone-800" />
         </div>
       </div>
     )
@@ -56,39 +22,11 @@ export default function MessageBubble({ message, isUser, isConclusion }) {
 
   if (isUser) {
     return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'flex-end',
-        gap: '10px',
-        justifyContent: 'flex-end',
-        animation: 'fadeUp 0.3s ease both',
-      }}>
-        <div style={{
-          maxWidth: 'min(480px, 80%)',
-          padding: '14px 18px',
-          borderRadius: '22px',
-          borderBottomRightRadius: '4px',
-          lineHeight: '1.65',
-          fontSize: '0.9375rem',
-          background: '#3a6640',
-          color: 'white',
-        }}>
+      <div className="flex items-end gap-2.5 justify-end animate-fadeUp">
+        <div className="max-w-[min(480px,80%)] p-3.5 px-4.5 rounded-3xl rounded-br text-base leading-relaxed bg-sage-700 text-white">
           {message}
         </div>
-        <div style={{
-          width: '34px',
-          height: '34px',
-          borderRadius: '50%',
-          background: '#3a6640',
-          color: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '0.6875rem',
-          fontWeight: '600',
-          letterSpacing: '0.02em',
-          flexShrink: 0,
-        }}>
+        <div className="w-8.5 h-8.5 rounded-full bg-sage-700 text-white flex items-center justify-center text-xs font-semibold tracking-wide flex-shrink-0">
           U
         </div>
       </div>
@@ -97,38 +35,11 @@ export default function MessageBubble({ message, isUser, isConclusion }) {
 
   // Bot message
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'flex-end',
-      gap: '10px',
-      animation: 'fadeUp 0.3s ease both',
-    }}>
-      <div style={{
-        width: '34px',
-        height: '34px',
-        borderRadius: '50%',
-        background: '#e4ede4',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '1rem',
-        flexShrink: 0,
-        border: '1.5px solid #c5d9c4',
-      }}>
+    <div className="flex items-end gap-2.5 animate-fadeUp">
+      <div className="w-8.5 h-8.5 rounded-full bg-green-100 flex items-center justify-center text-lg flex-shrink-0 border-2 border-green-300">
         🤖
       </div>
-      <div style={{
-        maxWidth: 'min(480px, 80%)',
-        padding: '14px 18px',
-        borderRadius: '22px',
-        borderBottomLeftRadius: '4px',
-        lineHeight: '1.65',
-        fontSize: '0.9375rem',
-        background: '#fdfcf9',
-        color: '#4a4238',
-        border: '1.5px solid #e4e0d8',
-        boxShadow: '0 1px 4px rgba(30, 49, 33, 0.08)',
-      }}>
+      <div className="max-w-[min(480px,80%)] p-3.5 px-4.5 rounded-3xl rounded-bl text-base leading-relaxed bg-warm-white text-stone-800 border-2 border-stone-300 shadow-card">
         {message}
       </div>
     </div>

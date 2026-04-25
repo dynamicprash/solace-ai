@@ -53,8 +53,8 @@ export default function LoginForm() {
   const displayError = authError || Object.values(errors)[0]
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-      <div className="flex flex-col" style={{ gap: '6px' }}>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4.5">
+      <div className="flex flex-col gap-1.5">
         <Input
           name="username"
           label="Username"
@@ -68,7 +68,7 @@ export default function LoginForm() {
         />
       </div>
 
-      <div className="flex flex-col" style={{ gap: '6px' }}>
+      <div className="flex flex-col gap-1.5">
         <Input
           name="password"
           label="Password"
@@ -83,15 +83,7 @@ export default function LoginForm() {
       </div>
 
       {displayError && (
-        <div style={{
-          backgroundColor: '#fef2f2',
-          border: '1px solid #fecaca',
-          color: '#b91c1c',
-          borderRadius: '8px',
-          padding: '10px 14px',
-          fontSize: '0.875rem',
-          fontFamily: 'var(--font-body)',
-        }}>
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-2.5 px-3.5 text-sm font-body">
           {displayError}
         </div>
       )}
@@ -100,7 +92,7 @@ export default function LoginForm() {
         Sign In
       </Button>
 
-      <div className="text-center font-body" style={{ marginTop: '24px', fontSize: '0.78125rem', color: '#a89f94', lineHeight: '1.5' }}>
+      <div className="text-center font-body mt-6 text-xs text-stone-500 leading-relaxed">
         Demo credentials:<br />
         Username: <strong>demo</strong> | Password: <strong>demo123</strong>
       </div>
