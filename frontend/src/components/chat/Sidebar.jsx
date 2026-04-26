@@ -57,7 +57,7 @@ export default function Sidebar({ isOpen, onNewChat, onSelectSession }) {
         <div className="flex items-center gap-2">
           <span className="text-xl">🌿</span>
           <span className="font-display text-xl text-sage-200 font-medium">
-            Mindful
+            Solace-AI
           </span>
         </div>
       </div>

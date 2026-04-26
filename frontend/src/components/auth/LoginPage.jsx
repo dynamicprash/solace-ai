@@ -48,7 +48,7 @@ export default function LoginPage({ mode: initialMode = 'login' }) {
         <div className="text-center mb-9">
           <div className="text-5xl mb-2.5">🌿</div>
           <h1 className="font-display font-bold text-sage-700 text-2xl tracking-tight mb-1.5">
-            Mindful
+            Solace-AI
           </h1>
           <p className="text-stone-500 italic text-sm">
             Your safe space to be heard
@@ -88,7 +88,7 @@ export default function LoginPage({ mode: initialMode = 'login' }) {
         <p className="font-body text-center leading-relaxed mt-6 text-xs text-stone-500">
           This is a supportive tool, not a substitute for professional mental health care.
           <br />
-          If you're in crisis, please call <strong className="text-stone-600">988</strong>.
+          If you're in crisis, please call <strong className="text-stone-600">1166</strong>.
         </p>
       </div>
     </div>

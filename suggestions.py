@@ -139,7 +139,7 @@ def _conclusion_system_prompt(category, severity, facts_str):
         crisis = """
 ## Crisis Resources
 If you are in immediate danger, please reach out:
-- **988 Suicide & Crisis Lifeline** — Call or text **988** (US, 24/7)
+- **1166 Suicide & Crisis Lifeline** — Call or text **1166** (US, 24/7)
 - **Crisis Text Line** — Text **HOME** to **741741**
 - **International** — https://www.iasp.info/resources/Crisis_Centres/"""
 

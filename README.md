@@ -159,7 +159,7 @@ npm run dev
 ---
 
 ## Crisis Resources (auto-shown for high severity)
-- **988 Suicide & Crisis Lifeline** — Call or text 988
+- **1166 Suicide & Crisis Lifeline** — Call or text 1166
 - **Crisis Text Line** — Text HOME to 741741
 - **International** — https://www.iasp.info/resources/Crisis_Centres/
 

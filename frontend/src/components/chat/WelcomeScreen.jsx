@@ -44,7 +44,7 @@ export default function WelcomeScreen({ userName, onStart }) {
       <p className="mt-6 text-xs text-stone-500 leading-relaxed">
         This is a supportive tool, not a substitute for professional mental health care.
         <br />
-        If you're in crisis, please call <strong className="text-stone-600">988</strong>.
+        If you're in crisis, please call <strong className="text-stone-600">1166</strong>.
       </p>
     </div>
   )
