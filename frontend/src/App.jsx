@@ -5,6 +5,7 @@ import { authService } from './services/auth'
 import LoginPage from './components/auth/LoginPage'
 import ChatPage from './components/chat/ChatPage'
 import DashboardPage from './components/dashboard/DashboardPage'
+import JournalPage from './components/journal/JournalPage'
 
 export default function App() {
   const { setUser, setAuthenticated, isAuthenticated } = useAuthStore()
@@ -54,6 +55,10 @@ export default function App() {
         <Route
           path="/dashboard"
           element={isAuthenticated ? <DashboardPage /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/journal"
+          element={isAuthenticated ? <JournalPage /> : <Navigate to="/login" />}
         />
         <Route
           path="/"

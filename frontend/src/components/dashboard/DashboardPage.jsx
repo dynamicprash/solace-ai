@@ -55,12 +55,20 @@ export default function DashboardPage() {
               Your chat insights
             </h1>
           </div>
-          <button
-            onClick={() => navigate('/chat')}
-            className="px-4 py-2 bg-sage-700 text-white rounded-xl text-sm font-medium hover:bg-sage-800 transition"
-          >
-            Open Chat
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => navigate('/journal')}
+              className="px-4 py-2 bg-white text-sage-700 border border-sage-200 rounded-xl text-sm font-medium hover:bg-sage-50 transition"
+            >
+              Public Journal
+            </button>
+            <button
+              onClick={() => navigate('/chat')}
+              className="px-4 py-2 bg-sage-700 text-white rounded-xl text-sm font-medium hover:bg-sage-800 transition"
+            >
+              Open Chat
+            </button>
+          </div>
         </div>
 
         {loading ? (

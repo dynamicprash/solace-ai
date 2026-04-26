@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from db.convert import default_facts, message_ts_now, user_to_template_dict
-from db.models import ChatMessage, ChatSession, User
+from db.models import ChatMessage, ChatSession, User, Journal
 
 
 async def get_user_by_username(db: AsyncSession, username: str) -> User | None:
@@ -156,3 +156,43 @@ def template_user_from_model(user: User | None) -> dict[str, Any] | None:
     if user is None:
         return None
     return user_to_template_dict(user)
+
+
+async def create_journal(
+    db: AsyncSession, *, user_id: str, content: str, title: str | None = None, is_anonymous: bool = False
+) -> Journal:
+    uid = uuid.UUID(user_id)
+    j = Journal(
+        user_id=uid,
+        title=title,
+        content=content,
+        is_public=True,
+        is_anonymous=is_anonymous,
+    )
+    db.add(j)
+    await db.flush()
+    return j
+
+
+async def get_public_journals(db: AsyncSession, limit: int = 50, offset: int = 0) -> list[dict[str, Any]]:
+    r = await db.execute(
+        select(Journal, User)
+        .join(User, Journal.user_id == User.id)
+        .where(Journal.is_public == True)
+        .order_by(Journal.created_at.desc())
+        .limit(limit)
+        .offset(offset)
+    )
+    rows = r.all()
+    journals = []
+    for j, u in rows:
+        author_name = "Anonymous" if j.is_anonymous else u.display_name
+        journals.append({
+            "id": str(j.id),
+            "title": j.title,
+            "content": j.content,
+            "created_at": j.created_at.isoformat() if j.created_at else "",
+            "author_name": author_name,
+            "is_anonymous": j.is_anonymous,
+        })
+    return journals

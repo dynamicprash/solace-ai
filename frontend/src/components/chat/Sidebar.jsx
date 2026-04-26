@@ -78,6 +78,13 @@ export default function Sidebar({ isOpen, onNewChat, onSelectSession }) {
         >
           Dashboard
         </button>
+        <button
+          onClick={() => navigate('/journal')}
+          className="w-full p-3 bg-emerald-600 text-white rounded-xl text-sm font-body font-medium hover:bg-emerald-700 transition-all border border-emerald-600"
+          style={{ backgroundColor: '#2f7a4e' }}
+        >
+          Public Journal
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-2">

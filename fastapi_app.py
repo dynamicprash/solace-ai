@@ -565,3 +565,41 @@ async def api_delete_session(
     if not ok:
         return JSONResponse({"error": "Not found"}, status_code=404)
     return JSONResponse({"ok": True})
+
+
+@app.get("/api/journals")
+async def api_get_journals(request: Request, db: AsyncSession = Depends(get_db)):
+    if not request.session.get("user_id"):
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    
+    limit = int(request.query_params.get("limit", 50))
+    offset = int(request.query_params.get("offset", 0))
+    journals = await crud.get_public_journals(db, limit=limit, offset=offset)
+    return JSONResponse({"journals": journals})
+
+
+@app.post("/api/journals")
+async def api_create_journal(request: Request, db: AsyncSession = Depends(get_db)):
+    if not request.session.get("user_id"):
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    
+    data = await request.json()
+    content = (data.get("content") or "").strip()
+    title = (data.get("title") or "").strip()
+    is_anonymous = bool(data.get("is_anonymous"))
+    
+    if not content:
+        return JSONResponse({"error": "Content is required"}, status_code=400)
+    
+    user_id = request.session["user_id"]
+    try:
+        j = await crud.create_journal(
+            db, 
+            user_id=user_id, 
+            title=title if title else None, 
+            content=content, 
+            is_anonymous=is_anonymous
+        )
+        return JSONResponse({"ok": True, "journal_id": str(j.id)})
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)

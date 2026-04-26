@@ -28,6 +28,9 @@ class User(Base):
     sessions: Mapped[list["ChatSession"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
+    journals: Mapped[list["Journal"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class ChatSession(Base):
@@ -87,3 +90,25 @@ class ChatMessage(Base):
     )
 
     session: Mapped["ChatSession"] = relationship(back_populates="messages")
+
+
+class Journal(Base):
+    __tablename__ = "journals"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    title: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
+    content: Mapped[str] = mapped_column(Text())
+    is_public: Mapped[bool] = mapped_column(default=True)
+    is_anonymous: Mapped[bool] = mapped_column(default=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    user: Mapped["User"] = relationship(back_populates="journals")
