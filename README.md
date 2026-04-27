@@ -87,6 +87,16 @@ Session saved → viewable in sidebar anytime
 
 ---
 
+## Dataset
+
+The core BERT+BiLSTM classification model is trained on a comprehensive mental health sentiment dataset.
+
+*   **Source**: [Kaggle — Sentiment Analysis for Mental Health](https://www.kaggle.com/datasets/suchintikasarkar/sentiment-analysis-for-mental-health)
+*   **Composition**: The dataset contains thousands of labeled entries across multiple mental health categories (Anxiety, Depression, Bipolar, ADHD, etc.) and various severity levels.
+*   **Preprocessing**: Raw text is cleaned, tokenized using the BERT base tokenizer, and balanced to ensure reliable classification performance across all detected conditions.
+
+---
+
 ## Setup & Run
 
 ### Step 1 — Install dependencies

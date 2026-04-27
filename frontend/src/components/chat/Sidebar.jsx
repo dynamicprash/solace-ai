@@ -45,17 +45,16 @@ export default function Sidebar({ isOpen, onNewChat, onSelectSession }) {
     return value === 'high'
       ? 'bg-red-500'
       : value === 'medium'
-      ? 'bg-yellow-400'
-      : 'bg-emerald-300'
+        ? 'bg-yellow-400'
+        : 'bg-emerald-300'
   }
 
   return (
-    <div className={`h-screen bg-emerald-950 text-white flex flex-col overflow-hidden transition-all duration-300 ${
-      isOpen ? 'w-64 opacity-100 min-w-[16rem]' : 'w-0 opacity-0 min-w-0 pointer-events-none'
-    }`}>
+    <div className={`h-screen bg-emerald-950 text-white flex flex-col overflow-hidden transition-all duration-300 ${isOpen ? 'w-64 opacity-100 min-w-[16rem]' : 'w-0 opacity-0 min-w-0 pointer-events-none'
+      }`}>
       <div className="p-5 pb-4 border-b border-emerald-900">
         <div className="flex items-center gap-2">
-          <span className="w-5 h-5 border-2 border-sage-400 rounded-full" />
+          <span className="text-xl">🌿</span>
           <span className="font-display text-xl text-sage-200 font-medium">
             Solace-AI
           </span>
@@ -99,11 +98,10 @@ export default function Sidebar({ isOpen, onNewChat, onSelectSession }) {
                 <div
                   key={session.session_id}
                   onClick={() => onSelectSession(session.session_id)}
-                  className={`p-2.5 rounded-lg cursor-pointer mb-0.5 transition-colors ${
-                    currentSessionId === session.session_id
-                      ? 'bg-emerald-900/40 border border-emerald-800'
-                      : 'hover:bg-emerald-950/40'
-                  }`}
+                  className={`p-2.5 rounded-lg cursor-pointer mb-0.5 transition-colors ${currentSessionId === session.session_id
+                    ? 'bg-emerald-900/40 border border-emerald-800'
+                    : 'hover:bg-emerald-950/40'
+                    }`}
                 >
                   <div className="flex items-center gap-1.5 mb-1">
                     <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${severityClass(severity)}`} />
@@ -114,9 +112,8 @@ export default function Sidebar({ isOpen, onNewChat, onSelectSession }) {
                       <span className={`w-2.5 h-2.5 rounded-full ${severityClass(severity)}`} />
                       <button
                         onClick={(e) => handleDeleteSession(session.session_id, e)}
-                        className={`bg-none border-none text-white/20 cursor-pointer text-base p-0 rounded hover:text-red-300/70 transition-colors ${
-                          currentSessionId === session.session_id ? 'block' : 'hidden'
-                        }`}
+                        className={`bg-none border-none text-white/20 cursor-pointer text-base p-0 rounded hover:text-red-300/70 transition-colors ${currentSessionId === session.session_id ? 'block' : 'hidden'
+                          }`}
                         title="Delete chat"
                       >
                         ×

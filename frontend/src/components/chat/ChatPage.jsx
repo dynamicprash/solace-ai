@@ -60,9 +60,13 @@ export default function ChatPage() {
     try {
       setIsLoading(true)
       const response = await chatService.getSession(sessionId)
+      const sessionHistory = response.history || []
+      if (response.concluded && sessionHistory.length > 0) {
+        sessionHistory[sessionHistory.length - 1].isConclusion = true
+      }
       useChatStore.setState({
         currentSessionId: sessionId,
-        messages: response.history || [],
+        messages: sessionHistory,
         isStreaming: false,
         isConcluded: response.concluded || false,
         questionCount: response.question_count || 0,
@@ -106,6 +110,19 @@ export default function ChatPage() {
           return
         }
 
+        if (event.type === 'concluding') {
+          const currentMessages = useChatStore.getState().messages
+          const lastMessage = currentMessages[currentMessages.length - 1]
+          if (lastMessage && lastMessage.role === 'bot') {
+            const updated = [
+              ...currentMessages.slice(0, -1),
+              { ...lastMessage, isConclusion: true },
+            ]
+            useChatStore.setState({ messages: updated })
+          }
+          return
+        }
+
         if (event.type === 'token') {
           const currentMessages = useChatStore.getState().messages
           const lastMessage = currentMessages[currentMessages.length - 1]
@@ -119,6 +136,15 @@ export default function ChatPage() {
         }
 
         if (event.type === 'done') {
+          const currentMessages = useChatStore.getState().messages
+          const lastMessage = currentMessages[currentMessages.length - 1]
+          if (lastMessage && lastMessage.role === 'bot' && event.concluded) {
+            const updated = [
+              ...currentMessages.slice(0, -1),
+              { ...lastMessage, isConclusion: true },
+            ]
+            useChatStore.setState({ messages: updated })
+          }
           useChatStore.setState({
             isStreaming: false,
             isConcluded: event.concluded || false,

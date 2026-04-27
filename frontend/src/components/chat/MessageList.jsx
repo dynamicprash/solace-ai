@@ -30,7 +30,7 @@ export default function MessageList({
 
   return (
     <div className="flex-1 overflow-y-auto p-7 flex flex-col gap-4.5">
-      <div className="max-w-4xl w-full mx-auto flex flex-col gap-4.5">
+      <div className="max-w-5xl w-full mx-auto flex flex-col gap-4.5">
         {messages && messages.length > 0 ? (
           messages.map((msg, idx) => (
             <MessageBubble
