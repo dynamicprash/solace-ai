@@ -104,13 +104,17 @@ The core BERT+BiLSTM classification model is trained on a comprehensive mental h
 pip install -r requirements.txt
 ```
 
-### Step 2 — Preprocess dataset
-```bash
-python generate_dataset.py
-```
+### Step 2 — Download Dataset
+1. Visit the [Kaggle Dataset Page](https://www.kaggle.com/datasets/suchintikasarkar/sentiment-analysis-for-mental-health).
+2. Download the `.zip` file and extract `mental_health_dataset.csv`.
+3. Create a folder named `datasets` in the project root and place the `.csv` file inside.
 
-### Step 3 — Train the model
+### Step 3 — Preprocess & Train
 ```bash
+# 1. Clean and encode the data
+python generate_dataset.py
+
+# 2. Train the BERT+BiLSTM model
 python train.py
 # Takes 10–30 mins on CPU, ~5 mins on GPU
 # Saves: saved_models/bert_lstm_model.pt
@@ -149,7 +153,7 @@ python app.py
 cd frontend
 npm install
 npm run dev
-# → http://localhost:5173  (proxies /api/* to FastAPI on :8000)
+# → http://localhost:3000  (proxies /api/* to FastAPI on :8000)
 ```
 
 ---
