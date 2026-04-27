@@ -6,6 +6,7 @@ import LoginPage from './components/auth/LoginPage'
 import ChatPage from './components/chat/ChatPage'
 import DashboardPage from './components/dashboard/DashboardPage'
 import JournalPage from './components/journal/JournalPage'
+import LandingPage from './pages/LandingPage'
 
 export default function App() {
   const { setUser, setAuthenticated, isAuthenticated } = useAuthStore()
@@ -46,8 +47,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<LoginPage mode="login" />} />
-        <Route path="/register" element={<LoginPage mode="register" />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/chat" /> : <LoginPage mode="login" />} />
+        <Route path="/register" element={isAuthenticated ? <Navigate to="/chat" /> : <LoginPage mode="register" />} />
         <Route
           path="/chat"
           element={isAuthenticated ? <ChatPage /> : <Navigate to="/login" />}
@@ -59,10 +61,6 @@ export default function App() {
         <Route
           path="/journal"
           element={isAuthenticated ? <JournalPage /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/"
-          element={<Navigate to={isAuthenticated ? '/chat' : '/login'} />}
         />
       </Routes>
     </BrowserRouter>

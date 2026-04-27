@@ -3,12 +3,12 @@ import MessageBubble from './MessageBubble'
 import TypingIndicator from './TypingIndicator'
 import WelcomeScreen from './WelcomeScreen'
 
-export default function MessageList({ 
-  messages, 
-  isStreaming, 
+export default function MessageList({
+  messages,
+  isStreaming,
   hasStarted,
   userName,
-  onStart 
+  onStart
 }) {
   const messagesEndRef = useRef(null)
 

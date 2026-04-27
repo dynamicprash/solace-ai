@@ -1,4 +1,4 @@
-# 🌿 Mental Health Chatbot
+# Mental Health Chatbot
 
 A full-stack mental health support chatbot with React frontend and FastAPI backend.
 
@@ -35,6 +35,24 @@ Mental_health_chatbot/
     ├── auth.html            ← Legacy login / register (FastAPI fallback)
     └── chat.html            ← Legacy chat interface (FastAPI fallback)
 ```
+
+---
+
+## Key Features
+
+- **Hybrid AI Assessment**: Combines a local custom PyTorch BERT+BiLSTM model for real-time condition & severity classification with the Groq LLaMA 3.3 70B API for empathetic conversational flow and fact extraction.
+- **Intelligent Personal Dashboard**: Transforms raw chat data into an advanced analytical hub featuring 8 unique visualisations:
+  -  Wellbeing Pulse (Composite health score)
+  -  Emotional Tide (Temporal emotion tracking)
+  -  Trigger Constellation (Stress source treemap)
+  -  Severity Journey (Mental health trajectory)
+  -  Category Profile (Radar chart of detected conditions)
+  -  Engagement Heatmap (Support-seeking patterns)
+  -  Session Depth (Reflection quality measurement)
+  -  Coping Toolkit (Aggregated, personalised coping strategies)
+- **Real-Time Streaming Interface**: Uses Server-Sent Events (SSE) for token-by-token response streaming and live severity updates.
+- **Public Journaling**: A safe community space for users to post reflections and read peer entries, with support for anonymous posting.
+- **Privacy & Security**: Employs session-based auth, SHA-256 password hashing, and local inference for the core classification model.
 
 ---
 
@@ -145,22 +163,25 @@ npm run dev
 | `predict.py` | Load saved model → expose `Predictor.predict(text)` |
 | `suggestions.py` | Groq LLM: extract facts, stream questions, generate conclusion |
 | `chat_state.py` | `Predictor`, `hash_pw`, `SECRET_KEY`, pure helpers (`dominant_prediction`, …) |
-| `db/` | SQLAlchemy models (`users`, `chat_sessions`, `chat_messages`), async + sync engines |
-| `fastapi_app.py` | FastAPI routes, async DB, SSE streaming, Jinja2 |
+| `db/models.py` | SQLAlchemy models (`users`, `chat_sessions`, `chat_messages`, `journals`) |
+| `db/crud_async.py` | Complex database queries, fact aggregation, and analytics metrics calculation |
+| `fastapi_app.py` | FastAPI routes (chat, journal, analytics dashboard), SSE streaming |
 | `app.py` | Re-exports FastAPI `app`; `python app.py` runs uvicorn on port 8000 |
 | `app_flask.py` | Legacy Flask app (same behaviour; uses `chat_state.py`) |
 | `frontend/src/App.jsx` | React routing, auth checks, main app component |
 | `frontend/src/store/` | Zustand stores: auth, chat state management |
-| `frontend/src/services/` | API clients: auth, chat, SSE handling |
-| `frontend/src/components/` | React components: auth forms, chat UI, dashboard |
+| `frontend/src/services/` | API clients: auth, chat, journal, and SSE handling |
+| `frontend/src/components/chat/` | Real-time chat interface components (Sidebar, MessageList, Input) |
+| `frontend/src/components/dashboard/` | Advanced dashboard layout and the 8 Recharts-based analytics components |
+| `frontend/src/components/journal/` | Public journaling interface for creating and browsing community posts |
 | `templates/auth.html` | Legacy login + register UI (FastAPI fallback) |
 | `templates/chat.html` | Legacy chat interface (FastAPI fallback) |
 
 ---
 
-## Crisis Resources (auto-shown for high severity)
-- **1166 Suicide & Crisis Lifeline** — Call or text 1166
-- **Crisis Text Line** — Text HOME to 741741
+- **National Suicide Prevention Helpline** — Call **1166** (Nepal)
+- **Patan Hospital Helpline** — Call **9840021212**
+- **TPO Nepal Toll Free** — **1660-01-02005**
 - **International** — https://www.iasp.info/resources/Crisis_Centres/
 
 > ⚠️ This app is a supportive tool, not a replacement for professional mental health care.

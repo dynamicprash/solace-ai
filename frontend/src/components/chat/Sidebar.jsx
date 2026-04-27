@@ -55,7 +55,7 @@ export default function Sidebar({ isOpen, onNewChat, onSelectSession }) {
     }`}>
       <div className="p-5 pb-4 border-b border-emerald-900">
         <div className="flex items-center gap-2">
-          <span className="text-xl">🌿</span>
+          <span className="w-5 h-5 border-2 border-sage-400 rounded-full" />
           <span className="font-display text-xl text-sage-200 font-medium">
             Solace-AI
           </span>

@@ -174,6 +174,44 @@ async def create_journal(
     return j
 
 
+async def get_all_sessions_with_details(
+    db: AsyncSession, user_id: str
+) -> list[ChatSession]:
+    """Fetch all sessions with messages loaded (for analytics)."""
+    try:
+        uid = uuid.UUID(user_id)
+    except ValueError:
+        return []
+    r = await db.execute(
+        select(ChatSession)
+        .where(ChatSession.user_id == uid)
+        .options(selectinload(ChatSession.messages))
+        .order_by(ChatSession.created_at.asc())
+    )
+    return list(r.scalars().all())
+
+
+async def get_message_timestamps(
+    db: AsyncSession, user_id: str
+) -> list[dict[str, Any]]:
+    """Fetch all message timestamps for a user (for engagement heatmap)."""
+    try:
+        uid = uuid.UUID(user_id)
+    except ValueError:
+        return []
+    r = await db.execute(
+        select(ChatMessage.ts, ChatMessage.role)
+        .join(ChatSession, ChatMessage.session_id == ChatSession.id)
+        .where(ChatSession.user_id == uid)
+        .order_by(ChatMessage.ts.asc())
+    )
+    rows = r.all()
+    return [
+        {"ts": row.ts.isoformat() if row.ts else "", "role": row.role}
+        for row in rows
+    ]
+
+
 async def get_public_journals(db: AsyncSession, limit: int = 50, offset: int = 0) -> list[dict[str, Any]]:
     r = await db.execute(
         select(Journal, User)

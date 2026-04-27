@@ -139,8 +139,9 @@ def _conclusion_system_prompt(category, severity, facts_str):
         crisis = """
 ## Crisis Resources
 If you are in immediate danger, please reach out:
-- **1166 Suicide & Crisis Lifeline** — Call or text **1166** (US, 24/7)
-- **Crisis Text Line** — Text **HOME** to **741741**
+- **National Suicide Prevention Helpline** — Call **1166** (Nepal, 24/7)
+- **Patan Hospital Helpline** — Call **9840021212**
+- **TPO Nepal Toll Free** — **1660-01-02005**
 - **International** — https://www.iasp.info/resources/Crisis_Centres/"""
 
     return f"""You are a compassionate mental health support assistant completing a 5-question assessment.

@@ -530,6 +530,215 @@ async def api_dashboard_weekly(request: Request, db: AsyncSession = Depends(get_
     )
 
 
+@app.get("/api/dashboard/analytics")
+async def api_dashboard_analytics(request: Request, db: AsyncSession = Depends(get_db)):
+    if not request.session.get("user_id"):
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+
+    user_id = request.session["user_id"]
+    sessions = await crud.get_all_sessions_with_details(db, user_id)
+    msg_timestamps = await crud.get_message_timestamps(db, user_id)
+
+    # ── 1. Emotion Timeline ─────────────────────────────────────────────
+    emotion_timeline = []
+    date_emotions: dict[str, dict[str, int]] = {}
+    for sess in sessions:
+        date_key = sess.created_at.strftime("%Y-%m-%d") if sess.created_at else None
+        if not date_key:
+            continue
+        facts = sess.facts or {}
+        emotions = facts.get("emotions", [])
+        if date_key not in date_emotions:
+            date_emotions[date_key] = {}
+        for emo in emotions:
+            e = emo.lower().strip()
+            date_emotions[date_key][e] = date_emotions[date_key].get(e, 0) + 1
+
+    for date_key in sorted(date_emotions.keys()):
+        emotion_timeline.append({"date": date_key, "emotions": date_emotions[date_key]})
+
+    # ── 2. Trigger Frequency ─────────────────────────────────────────────
+    trigger_counts: dict[str, int] = {}
+    for sess in sessions:
+        facts = sess.facts or {}
+        for t in facts.get("triggers", []):
+            tl = t.lower().strip()
+            trigger_counts[tl] = trigger_counts.get(tl, 0) + 1
+    trigger_frequency = sorted(
+        [{"trigger": k, "count": v} for k, v in trigger_counts.items()],
+        key=lambda x: -x["count"],
+    )
+
+    # ── 3. Severity Journey ──────────────────────────────────────────────
+    severity_journey = []
+    sev_order = {"low": 1, "medium": 2, "high": 3}
+    for sess in sessions:
+        if sess.final_severity:
+            date_key = sess.created_at.strftime("%Y-%m-%d") if sess.created_at else ""
+            preds = sess.predictions or []
+            avg_conf = 0.0
+            if preds:
+                avg_conf = sum(p.get("sev_conf", 0) for p in preds) / len(preds)
+            severity_journey.append({
+                "date": date_key,
+                "severity": sess.final_severity,
+                "severity_num": sev_order.get(sess.final_severity, 0),
+                "confidence": round(avg_conf, 3),
+                "title": sess.title or "Untitled",
+            })
+
+    # ── 4. Category Profile ──────────────────────────────────────────────
+    cat_accum: dict[str, list[float]] = {}
+    for sess in sessions:
+        preds = sess.predictions or []
+        for p in preds:
+            cat = p.get("category", "neutral")
+            conf = p.get("cat_conf", 0.5)
+            if cat not in cat_accum:
+                cat_accum[cat] = []
+            cat_accum[cat].append(conf)
+    category_profile = {}
+    for cat, confs in cat_accum.items():
+        category_profile[cat] = round(sum(confs) / len(confs), 3) if confs else 0
+
+    # ── 5. Engagement Heatmap ────────────────────────────────────────────
+    heatmap_data: dict[str, int] = {}
+    for mt in msg_timestamps:
+        ts_str = mt.get("ts", "")
+        if not ts_str:
+            continue
+        try:
+            ts = datetime.fromisoformat(ts_str)
+            key = f"{ts.weekday()}_{ts.hour}"
+            heatmap_data[key] = heatmap_data.get(key, 0) + 1
+        except (ValueError, TypeError):
+            continue
+    engagement_heatmap = [
+        {"day_of_week": int(k.split("_")[0]), "hour": int(k.split("_")[1]), "count": v}
+        for k, v in heatmap_data.items()
+    ]
+
+    # ── 6. Session Depth Scores ──────────────────────────────────────────
+    session_depth_scores = []
+    for sess in sessions:
+        msgs = sorted(sess.messages, key=lambda m: m.id)
+        user_msgs = [m for m in msgs if m.role == "user"]
+        if not user_msgs:
+            continue
+        avg_len = sum(len(m.content) for m in user_msgs) / len(user_msgs)
+        unique_words = set()
+        for m in user_msgs:
+            unique_words.update(m.content.lower().split())
+        vocab_richness = min(len(unique_words) / 50, 1.0)
+        completion_bonus = 1.0 if sess.concluded else 0.6
+        depth = min(int(
+            (min(avg_len / 200, 1.0) * 40) +
+            (vocab_richness * 35) +
+            (completion_bonus * 25)
+        ), 100)
+        date_key = sess.created_at.strftime("%Y-%m-%d") if sess.created_at else ""
+        session_depth_scores.append({
+            "session_id": str(sess.id),
+            "title": sess.title or "Untitled",
+            "score": depth,
+            "date": date_key,
+            "message_count": len(user_msgs),
+        })
+
+    # ── 7. Coping Strategies ─────────────────────────────────────────────
+    coping_keywords = {
+        "Breathing": ["breathing", "breath", "inhale", "exhale", "deep breaths"],
+        "Exercise": ["exercise", "walk", "walking", "physical activity", "yoga", "stretch"],
+        "Social": ["talk to someone", "reach out", "friend", "family", "support system", "loved one"],
+        "Professional": ["therapist", "counselor", "professional help", "mental health professional", "psychiatrist"],
+        "Mindfulness": ["meditation", "mindful", "present moment", "grounding", "awareness"],
+        "Journaling": ["journal", "write", "writing", "express", "thoughts down"],
+        "Sleep": ["sleep", "rest", "bedtime", "sleep hygiene", "routine"],
+        "Self-care": ["self-care", "hobby", "enjoyable", "relaxation", "treat yourself"],
+    }
+    coping_counts: dict[str, int] = {}
+    for sess in sessions:
+        if not sess.concluded:
+            continue
+        msgs = sorted(sess.messages, key=lambda m: m.id)
+        bot_msgs = [m for m in msgs if m.role == "assistant"]
+        if not bot_msgs:
+            continue
+        last_bot = bot_msgs[-1].content.lower()
+        for category, keywords in coping_keywords.items():
+            for kw in keywords:
+                if kw in last_bot:
+                    coping_counts[category] = coping_counts.get(category, 0) + 1
+                    break
+
+    coping_strategies = [
+        {"category": k, "count": v}
+        for k, v in sorted(coping_counts.items(), key=lambda x: -x[1])
+    ]
+
+    # ── 8. Wellbeing Pulse ───────────────────────────────────────────────
+    # Severity trend (lower is better → higher score)
+    sev_scores_list = [sev_order.get(s.final_severity, 1) for s in sessions if s.final_severity]
+    if len(sev_scores_list) >= 2:
+        recent = sev_scores_list[-min(3, len(sev_scores_list)):]
+        older = sev_scores_list[:max(1, len(sev_scores_list) - 3)]
+        recent_avg = sum(recent) / len(recent)
+        older_avg = sum(older) / len(older)
+        severity_trend_score = max(0, min(100, int(100 - (recent_avg / 3) * 100 + 33)))
+        trend = "improving" if recent_avg < older_avg else ("stable" if recent_avg == older_avg else "declining")
+    elif sev_scores_list:
+        severity_trend_score = max(0, min(100, int(100 - (sev_scores_list[0] / 3) * 100 + 33)))
+        trend = "stable"
+    else:
+        severity_trend_score = 50
+        trend = "neutral"
+
+    # Engagement consistency
+    total_sessions_count = len(sessions)
+    engagement_score = min(100, total_sessions_count * 15)
+
+    # Completion rate
+    concluded_count = sum(1 for s in sessions if s.concluded)
+    completion_rate = int((concluded_count / total_sessions_count) * 100) if total_sessions_count else 0
+
+    # Emotional diversity
+    all_emotions = set()
+    for sess in sessions:
+        facts = sess.facts or {}
+        for e in facts.get("emotions", []):
+            all_emotions.add(e.lower().strip())
+    emotion_diversity = min(100, len(all_emotions) * 20)
+
+    pulse_score = int(
+        severity_trend_score * 0.35 +
+        engagement_score * 0.20 +
+        completion_rate * 0.25 +
+        emotion_diversity * 0.20
+    )
+
+    wellbeing_pulse = {
+        "score": min(100, max(0, pulse_score)),
+        "trend": trend,
+        "breakdown": {
+            "severity_trend": severity_trend_score,
+            "engagement": engagement_score,
+            "completion_rate": completion_rate,
+            "emotional_diversity": emotion_diversity,
+        },
+    }
+
+    return JSONResponse({
+        "emotion_timeline": emotion_timeline,
+        "trigger_frequency": trigger_frequency,
+        "severity_journey": severity_journey,
+        "category_profile": category_profile,
+        "engagement_heatmap": engagement_heatmap,
+        "session_depth_scores": session_depth_scores,
+        "coping_strategies": coping_strategies,
+        "wellbeing_pulse": wellbeing_pulse,
+    })
+
+
 @app.get("/api/session/{session_id}")
 async def api_get_session(
     request: Request, session_id: str, db: AsyncSession = Depends(get_db)

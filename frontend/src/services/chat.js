@@ -84,4 +84,9 @@ export const chatService = {
     const response = await apiClient.get('/api/dashboard/weekly')
     return response.data
   },
+
+  async getDashboardAnalytics() {
+    const response = await apiClient.get('/api/dashboard/analytics')
+    return response.data
+  },
 }
