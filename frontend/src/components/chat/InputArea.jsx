@@ -3,9 +3,6 @@ import { useState, useEffect, useRef } from 'react'
 export default function InputArea({ 
   onSendMessage, 
   isLoading, 
-  isConcluded,
-  questionCount = 0,
-  maxQuestions = 10
 }) {
   const [message, setMessage] = useState('')
   const textareaRef = useRef(null)
@@ -30,21 +27,6 @@ export default function InputArea({
       e.preventDefault()
       handleSend()
     }
-  }
-
-  const remainingQuestions = maxQuestions - questionCount
-
-  if (isConcluded) {
-    return (
-      <div className="p-4 px-6 pb-5 bg-warm-white border-t border-stone-300 flex-shrink-0">
-        <div className="max-w-4xl mx-auto text-center text-stone-600 text-sm p-3.5">
-          <strong>Session Concluded</strong>
-          <p className="mt-2 text-xs">
-            Thank you for sharing. You can start a new chat or review your previous conversations.
-          </p>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -79,14 +61,6 @@ export default function InputArea({
             Shift+Enter
           </kbd>
           {' for new line'}
-          {remainingQuestions < maxQuestions && (
-            <>
-              {' • '}
-              <span className={questionCount > maxQuestions * 0.8 ? 'text-red-600' : 'text-stone-500'}>
-                {remainingQuestions} questions left
-              </span>
-            </>
-          )}
         </div>
       </div>
     </div>

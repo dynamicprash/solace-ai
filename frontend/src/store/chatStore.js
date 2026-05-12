@@ -5,7 +5,6 @@ export const useChatStore = create((set, get) => ({
   currentSessionId: null,
   messages: [],
   isStreaming: false,
-  isConcluded: false,
   questionCount: 0,
   pastSessions: [],
   currentAnalysis: null,
@@ -24,8 +23,6 @@ export const useChatStore = create((set, get) => ({
 
   setCurrentSessionId: (id) => set({ currentSessionId: id }),
 
-  setConcluded: (value) => set({ isConcluded: value }),
-
   incrementQuestionCount: () => {
     const current = get().questionCount
     set({ questionCount: current + 1 })
@@ -35,7 +32,6 @@ export const useChatStore = create((set, get) => ({
     set({
       messages: [],
       isStreaming: false,
-      isConcluded: false,
       questionCount: 0,
       currentAnalysis: null,
     })

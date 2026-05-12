@@ -1,22 +1,25 @@
 {
   "bert_name": "bert-base-uncased",
-  "max_len": 128,
+  "max_len": 160,
   "lstm_hidden": 256,
   "lstm_layers": 2,
   "dropout": 0.3,
-  "num_categories": 4,
-  "num_severities": 3,
-  "cat_classes": [
-    "anxiety",
-    "depression",
-    "neutral",
-    "self_harm"
+  "num_emotions": 13,
+  "emo_classes": [
+    "Anxiety",
+    "Sadness",
+    "Anger",
+    "Guilt",
+    "Disappointment",
+    "Confusion",
+    "Hopefulness",
+    "Joy",
+    "Love",
+    "Gratitude",
+    "Curiosity",
+    "Surprise",
+    "Neutral"
   ],
-  "sev_classes": [
-    "high",
-    "low",
-    "medium"
-  ],
-  "best_epoch": 3,
-  "best_val_acc": 0.8394772117962467
+  "best_epoch": 9,
+  "best_f1_micro": 0.45053557903848235
 }

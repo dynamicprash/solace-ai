@@ -18,13 +18,33 @@ def hash_pw(password: str) -> str:
 
 
 def dominant_prediction(predictions: list) -> tuple:
+    """
+    Aggregate multi-label emotion predictions across a session.
+    Returns (list_of_dominant_emotions, primary_emotion).
+    """
     if not predictions:
-        return "neutral", "low"
-    cats = Counter(p["category"] for p in predictions)
-    dom = cats.most_common(1)[0][0]
-    order = {"low": 0, "medium": 1, "high": 2}
-    worst = max(predictions, key=lambda p: order.get(p["severity"], 0))
-    return dom, worst["severity"]
+        return ["Neutral"], "Neutral"
+
+    # Count how often each emotion appears across predictions
+    emotion_counts: Counter = Counter()
+    for p in predictions:
+        emotions = p.get("emotions", [])
+        for e in emotions:
+            emotion_counts[e] += 1
+
+    if not emotion_counts:
+        return ["Neutral"], "Neutral"
+
+    # Get the top emotions (those appearing in >= 30% of predictions)
+    total = len(predictions)
+    dominant = [e for e, c in emotion_counts.most_common() if c / total >= 0.3]
+
+    # Always have at least one
+    if not dominant:
+        dominant = [emotion_counts.most_common(1)[0][0]]
+
+    primary = dominant[0]  # most frequent
+    return dominant, primary
 
 
 def gpt_history(chat_session: dict) -> list:

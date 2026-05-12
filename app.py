@@ -13,6 +13,26 @@ Docs: http://localhost:8000/docs
 """
 
 import os
+from pathlib import Path
+
+
+def load_dotenv_file(filename: str = ".env") -> None:
+    path = Path(filename)
+    if not path.exists():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and os.environ.get(key) is None:
+            os.environ[key] = value
+
+load_dotenv_file()
 
 from fastapi_app import app
 

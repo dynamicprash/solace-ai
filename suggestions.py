@@ -1,9 +1,10 @@
 """
 suggestions.py
 ===============
-All LLM interactions — now powered by Groq (FREE, fast inference).
+All LLM interactions — powered by Groq (FREE, fast inference).
+Fully adaptive conversation with emotion-aware prompting.
 
-Model used: llama-3.1-70b-versatile
+Model used: llama-3.3-70b-versatile
   - Free tier: 14,400 requests/day, 500,000 tokens/minute
   - No credit card required
 
@@ -22,20 +23,29 @@ from groq import Groq
 # ── Config ──────────────────────────────────────────────────────────────────
 GROQ_API_KEY  = os.environ.get("GROQ_API_KEY", "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")
 GROQ_MODEL    = "llama-3.3-70b-versatile"
-MAX_QUESTIONS = 5
 
-CATEGORY_DISPLAY = {
-    "anxiety"    : "Anxiety",
-    "depression" : "Depression",
-    "self_harm"  : "Self-harm / Suicidal ideation",
-    "neutral"    : "General distress",
+# ── Emotion display names ───────────────────────────────────────────────────
+EMOTION_DISPLAY = {
+    "Anxiety"        : "Anxiety / Nervousness",
+    "Sadness"        : "Sadness / Grief",
+    "Anger"          : "Anger / Frustration",
+    "Guilt"          : "Guilt / Remorse",
+    "Disappointment" : "Disappointment",
+    "Confusion"      : "Confusion / Overwhelm",
+    "Hopefulness"    : "Hopefulness / Optimism",
+    "Joy"            : "Joy / Excitement",
+    "Love"           : "Love / Admiration",
+    "Gratitude"      : "Gratitude / Caring",
+    "Curiosity"      : "Curiosity / Interest",
+    "Surprise"       : "Surprise / Realization",
+    "Neutral"        : "Neutral / Balanced",
 }
 
-SEVERITY_GUIDANCE = {
-    "low"   : "mild — respond warmly but lightly",
-    "medium": "moderate — show genuine concern, ask clarifying questions",
-    "high"  : "severe — respond with urgency, empathy, always mention professional help",
-}
+# Emotions that indicate potential risk — trigger crisis awareness
+HIGH_RISK_EMOTIONS = {"Anxiety", "Sadness", "Guilt", "Anger"}
+
+# Positive emotions — encourage and reflect
+POSITIVE_EMOTIONS = {"Hopefulness", "Joy", "Love", "Gratitude", "Curiosity"}
 
 
 def _client():
@@ -108,119 +118,106 @@ def facts_to_string(facts):
     return " | ".join(parts) if parts else "Still gathering information."
 
 
-# ── Prompt builders ──────────────────────────────────────────────────────────
+# ── Adaptive prompt builder ─────────────────────────────────────────────────
 
-def _question_system_prompt(cat_label, sev_label, facts_str, q_num):
-    remaining = MAX_QUESTIONS - q_num + 1
-    return f"""You are a compassionate, professional mental health support assistant conducting a gentle assessment.
+def _adaptive_system_prompt(emotions, facts_str, turn_count):
+    """Build a dynamic system prompt based on detected emotions and conversation context."""
 
-CURRENT AI ANALYSIS:
-- Detected condition: {cat_label}
-- Severity: {sev_label}
-- Facts so far: {facts_str}
-- Question {q_num} of {MAX_QUESTIONS} ({remaining} remaining)
+    # Format emotion labels for display
+    emotion_labels = [EMOTION_DISPLAY.get(e, e) for e in emotions]
+    emotion_str = ", ".join(emotion_labels) if emotion_labels else "Not yet determined"
 
-Ask exactly ONE short, warm, natural follow-up question.
-Follow this progression if not yet covered:
-  Q1-2: What is causing these feelings? (triggers)
-  Q3:   How long has this been going on? (duration)
-  Q4:   How is it affecting daily life? (impact)
-  Q5:   Do they have support around them?
-  If severity HIGH: gently ask about self-harm thoughts (if not yet asked)
+    # Determine emotional tone category
+    has_negative = any(e in HIGH_RISK_EMOTIONS for e in emotions)
+    has_positive = any(e in POSITIVE_EMOTIONS for e in emotions)
+    is_mixed     = has_negative and has_positive
 
-Rules: one question only, short, conversational, never repeat, no advice yet, no mention of AI.
-Respond with only the question itself."""
+    # Adaptive tone guidance
+    if is_mixed:
+        tone_guide = (
+            "The user is experiencing mixed emotions. Acknowledge the complexity — "
+            "validate the difficult feelings while gently reinforcing the positive ones. "
+            "Ask what feels strongest right now."
+        )
+    elif has_negative:
+        negative_emos = [e for e in emotions if e in HIGH_RISK_EMOTIONS]
+        tone_guide = (
+            f"The user is experiencing {', '.join(negative_emos).lower()}. "
+            "Respond with deep empathy and warmth. Ask thoughtful questions to understand "
+            "the root cause. Never dismiss or minimize their feelings."
+        )
+        # Escalate for persistent negative emotions
+        if turn_count >= 3:
+            tone_guide += (
+                " Since this emotional state has persisted across the conversation, "
+                "gently explore if they've considered talking to a trusted friend, "
+                "family member, or mental health professional."
+            )
+    elif has_positive:
+        tone_guide = (
+            "The user is in a positive emotional state. Reflect their positivity, "
+            "celebrate with them, and explore what's contributing to this feeling. "
+            "Help them identify ways to sustain this wellbeing."
+        )
+    else:
+        tone_guide = (
+            "The user's emotional state is neutral or unclear. Use gentle, open-ended "
+            "questions to understand how they're really feeling beneath the surface."
+        )
 
+    # Adaptive questioning based on turn count
+    if turn_count <= 1:
+        stage_guide = "This is early in the conversation. Focus on building rapport and understanding their current state."
+    elif turn_count <= 3:
+        stage_guide = "You're getting to know them. Explore triggers, context, and what's been on their mind."
+    elif turn_count <= 6:
+        stage_guide = "You have good context now. Go deeper — ask about patterns, coping, and what support they have."
+    else:
+        stage_guide = "This is a longer conversation. Provide gentle insights, suggest coping strategies, or offer a compassionate reflection of what you've learned."
 
-def _conclusion_system_prompt(category, severity, facts_str):
-    cat_label = CATEGORY_DISPLAY.get(category, category)
-    crisis = ""
-    if severity == "high" or category == "self_harm":
-        crisis = """
-## Crisis Resources
-If you are in immediate danger, please reach out:
-- **National Suicide Prevention Helpline** — Call **1166** (Nepal, 24/7)
-- **Patan Hospital Helpline** — Call **9840021212**
-- **TPO Nepal Toll Free** — **1660-01-02005**
-- **International** — https://www.iasp.info/resources/Crisis_Centres/"""
+    # Crisis awareness
+    crisis_note = ""
+    if "Anxiety" in emotions and "Sadness" in emotions:
+        crisis_note = (
+            "\n\nIMPORTANT: If the user expresses thoughts of self-harm or suicide, "
+            "always provide crisis resources:\n"
+            "- National Suicide Prevention Helpline — Call 1166 (Nepal, 24/7)\n"
+            "- Patan Hospital Helpline — Call 9840021212\n"
+            "- TPO Nepal Toll Free — 1660-01-02005\n"
+            "- International — https://www.iasp.info/resources/Crisis_Centres/"
+        )
 
-    return f"""You are a compassionate mental health support assistant completing a 5-question assessment.
+    return f"""You are Solace-AI, a compassionate and emotionally intelligent mental health companion.
 
-AI ANALYSIS: {cat_label} | Severity: {severity}
-Facts gathered: {facts_str}
+DETECTED EMOTIONS: {emotion_str}
+GATHERED CONTEXT: {facts_str}
+CONVERSATION TURN: {turn_count}
 
-Write a warm conclusion using EXACTLY these markdown section headers:
+{tone_guide}
 
-## I Hear You
-## What I'm Observing
-## Why You Might Be Feeling This Way
-## Coping Strategies
-## Recommended Next Steps
-{crisis}
+{stage_guide}
+{crisis_note}
 
-Tone: warm, empowering, hopeful. ~380 words. Plain language."""
-
-
-# ── Non-streaming ────────────────────────────────────────────────────────────
-
-def generate_question(conversation_history, category, severity, facts, question_number, client=None):
-    if client is None:
-        client = _client()
-    cat_label = CATEGORY_DISPLAY.get(category, category)
-    sev_label = SEVERITY_GUIDANCE.get(severity, severity)
-    facts_str = facts_to_string(facts)
-    system_prompt = _question_system_prompt(cat_label, sev_label, facts_str, question_number)
-    messages = [{"role": "system", "content": system_prompt}] + conversation_history
-    fallbacks = {
-        1: "What do you think has been causing you to feel this way?",
-        2: "How long have you been feeling like this?",
-        3: "How has this been affecting your daily life?",
-        4: "Do you have anyone around you that you can talk to?",
-        5: "Is there anything else that has been weighing on your mind?",
-    }
-    if client is None:
-        return fallbacks.get(question_number, "Can you tell me more about how you're feeling?")
-    try:
-        resp = client.chat.completions.create(model=GROQ_MODEL, messages=messages, max_tokens=120, temperature=0.7)
-        return resp.choices[0].message.content.strip()
-    except Exception:
-        return fallbacks.get(question_number, "Can you tell me a bit more about that?")
-
-
-def generate_conclusion(conversation_history, category, severity, facts, client=None):
-    if client is None:
-        client = _client()
-    facts_str = facts_to_string(facts)
-    system_prompt = _conclusion_system_prompt(category, severity, facts_str)
-    messages = [{"role": "system", "content": system_prompt}] + conversation_history
-    if client is None:
-        return "## I Hear You\nThank you for sharing.\n\n## Recommended Next Steps\nPlease consider speaking with a mental health professional."
-    try:
-        resp = client.chat.completions.create(model=GROQ_MODEL, messages=messages, max_tokens=700, temperature=0.7)
-        return resp.choices[0].message.content.strip()
-    except Exception as e:
-        return f"Error generating assessment: {e}"
+RULES:
+- Respond naturally and conversationally — you are a supportive companion, not a clinical tool
+- Ask ONE thoughtful follow-up question at the end of your response
+- Keep responses concise (2-4 sentences + question)
+- Never diagnose or prescribe — you are not a doctor
+- Never mention "AI analysis", "detected emotions", or technical details
+- Use the person's own words and experiences to show you're listening
+- If they share something positive, celebrate it genuinely"""
 
 
-# ── Streaming (used by app.py) ───────────────────────────────────────────────
+# ── Streaming (used by fastapi_app.py) ───────────────────────────────────────
 
-def stream_question(conversation_history, category, severity, facts, question_number, client=None):
+def stream_response(conversation_history, emotions, facts, turn_count, client=None):
     """Generator yielding token chunks from Groq for real-time streaming."""
     if client is None:
         client = _client()
 
-    cat_label = CATEGORY_DISPLAY.get(category, category)
-    sev_label = SEVERITY_GUIDANCE.get(severity, severity)
     facts_str = facts_to_string(facts)
-
-    is_conclusion = question_number > MAX_QUESTIONS
-
-    if is_conclusion:
-        system_content = _conclusion_system_prompt(category, severity, facts_str)
-        max_tokens     = 700
-    else:
-        system_content = _question_system_prompt(cat_label, sev_label, facts_str, question_number)
-        max_tokens     = 120
+    system_content = _adaptive_system_prompt(emotions, facts_str, turn_count)
+    max_tokens = 250
 
     messages = [{"role": "system", "content": system_content}] + conversation_history
 

@@ -30,11 +30,10 @@ import db.crud_async as crud
 from db.convert import chat_session_to_app_dict
 from db.session import dispose_async_engine, get_async_session_factory, init_engines
 from suggestions import (
-    MAX_QUESTIONS,
     _client,
     extract_facts,
     update_facts,
-    stream_question,
+    stream_response,
 )
 
 templates = Jinja2Templates(directory="templates")
@@ -279,8 +278,6 @@ async def api_start(request: Request, db: AsyncSession = Depends(get_db)):
             "session_id": str(sess.id),
             "message": opening,
             "question_count": 0,
-            "max_questions": MAX_QUESTIONS,
-            "concluded": False,
         }
     )
 
@@ -316,17 +313,14 @@ async def api_message(request: Request):
 
     async def event_gen():
         nonlocal user_input, session_id, user_id
-        dom_cat = "neutral"
-        dom_sev = "low"
+        dom_emotions = ["Neutral"]
+        primary_emotion = "Neutral"
 
         try:
             async with factory() as db:
                 sess = await crud.fetch_owned_session(db, session_id, user_id)
                 if not sess:
                     yield f"data: {json.dumps({'type': 'error', 'message': 'Session not found'})}\n\n"
-                    return
-                if sess.concluded:
-                    yield f"data: {json.dumps({'type': 'error', 'message': 'This session has already concluded'})}\n\n"
                     return
                 if not user_input:
                     yield f"data: {json.dumps({'type': 'error', 'message': 'Message is required'})}\n\n"
@@ -355,34 +349,31 @@ async def api_message(request: Request):
                         )
                     except Exception:
                         pred = {
-                            "category": "neutral",
-                            "severity": "low",
-                            "cat_conf": 0.5,
-                            "sev_conf": 0.5,
+                            "emotions": ["Neutral"],
+                            "primary_emotion": "Neutral",
+                            "confidences": {"Neutral": 0.5},
+                            "emo_conf": 0.5,
                         }
 
                     preds = list(sess.predictions or [])
                     preds.append(
                         {
-                            "category": pred["category"],
-                            "severity": pred["severity"],
-                            "cat_conf": pred["cat_conf"],
-                            "sev_conf": pred["sev_conf"],
+                            "emotions": pred["emotions"],
+                            "primary_emotion": pred["primary_emotion"],
+                            "emo_conf": pred["emo_conf"],
                         }
                     )
                     sess.predictions = preds
-                    dom_cat, dom_sev = cs.dominant_prediction(preds)
-                    sess.final_category = dom_cat
-                    sess.final_severity = dom_sev
+                    dom_emotions, primary_emotion = cs.dominant_prediction(preds)
+                    sess.final_category = primary_emotion  # reuse column for primary emotion
 
                     analysis_event = {
                         "type": "analysis",
-                        "category": dom_cat,
-                        "severity": dom_sev,
-                        "cat_conf": pred["cat_conf"],
-                        "sev_conf": pred["sev_conf"],
+                        "emotions": dom_emotions,
+                        "primary_emotion": primary_emotion,
+                        "confidences": pred.get("confidences", {}),
+                        "emo_conf": pred["emo_conf"],
                         "question_count": sess.question_count,
-                        "max_questions": MAX_QUESTIONS,
                     }
                     await db.commit()
                     analysis_line = f"data: {json.dumps(analysis_event)}\n\n"
@@ -400,21 +391,12 @@ async def api_message(request: Request):
                 )
                 facts_merged = update_facts(facts_merged, new_facts)
 
-            concluding_line = None
             async with factory() as db:
                 sess = await crud.fetch_owned_session(db, session_id, user_id)
                 if not sess:
                     return
                 sess.facts = facts_merged
-                is_conclusion = sess.question_count >= MAX_QUESTIONS
-                if is_conclusion:
-                    sess.concluded = True
                 await db.commit()
-                if is_conclusion:
-                    concluding_line = f"data: {json.dumps({'type': 'concluding'})}\n\n"
-
-            if concluding_line:
-                yield concluding_line
 
             async with factory() as db:
                 sess = await crud.fetch_owned_session(db, session_id, user_id)
@@ -422,10 +404,9 @@ async def api_message(request: Request):
                     return
                 chat = chat_session_to_app_dict(sess)
 
-            stream_it = stream_question(
+            stream_it = stream_response(
                 cs.gpt_history(chat),
-                dom_cat,
-                dom_sev,
+                dom_emotions,
                 chat["facts"],
                 chat["question_count"] + 1,
                 client=gpt_client,
@@ -448,10 +429,8 @@ async def api_message(request: Request):
                 done_event = {
                     "type": "done",
                     "question_count": sess.question_count,
-                    "max_questions": MAX_QUESTIONS,
-                    "concluded": sess.concluded,
-                    "category": dom_cat,
-                    "severity": dom_sev,
+                    "emotions": dom_emotions,
+                    "primary_emotion": primary_emotion,
                 }
                 done_line = f"data: {json.dumps(done_event)}\n\n"
 
@@ -504,26 +483,19 @@ async def api_dashboard_weekly(request: Request, db: AsyncSession = Depends(get_
                 count += 1
         weekly.append({"day": day.isoformat(), "count": count})
 
-    severity_counts = {"high": 0, "medium": 0, "low": 0, "unknown": 0}
-    concluded = 0
+    emotion_counts: dict[str, int] = {}
     total_sessions = len(rows)
 
     for session in rows:
-        if session.get("concluded"):
-            concluded += 1
-        severity = (session.get("final_severity") or "unknown").lower()
-        if severity not in severity_counts:
-            severity = "unknown"
-        severity_counts[severity] += 1
+        emotion = session.get("final_category") or "Neutral"
+        emotion_counts[emotion] = emotion_counts.get(emotion, 0) + 1
 
     return JSONResponse(
         {
             "sessions": rows,
             "summary": {
                 "total_sessions": total_sessions,
-                "concluded_sessions": concluded,
-                "active_sessions": total_sessions - concluded,
-                "severity_counts": severity_counts,
+                "emotion_counts": emotion_counts,
             },
             "weekly": weekly,
         }
@@ -755,10 +727,7 @@ async def api_get_session(
             "title": row["title"],
             "history": row["history"],
             "question_count": row["question_count"],
-            "max_questions": MAX_QUESTIONS,
-            "concluded": row["concluded"],
-            "final_category": row["final_category"],
-            "final_severity": row["final_severity"],
+            "final_emotion": row["final_category"],
             "facts": row["facts"],
         }
     )

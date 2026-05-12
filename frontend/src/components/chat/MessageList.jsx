@@ -37,7 +37,6 @@ export default function MessageList({
               key={idx}
               message={msg.content}
               isUser={msg.role === 'user'}
-              isConclusion={msg.isConclusion}
             />
           ))
         ) : (

@@ -1,55 +1,6 @@
 import ReactMarkdown from 'react-markdown';
 
-export default function MessageBubble({ message, isUser, isConclusion }) {
-  if (isConclusion) {
-    const formattedMessage = message.replace(
-      /(##\s+(?:I Hear You|What I'm Observing|Why You Might Be Feeling This Way|Coping Strategies|Recommended Next Steps|Crisis Resources))/gi,
-      '\n\n$1\n\n'
-    );
-
-    return (
-      <div className="flex w-full animate-fadeUp my-8">
-        <div className="w-full max-w-3xl mx-auto rounded-3xl border border-sage-200 bg-white shadow-xl overflow-hidden">
-          <div className="bg-sage-50/50 px-6 py-4 border-b border-sage-100 flex items-center gap-3">
-            <div className="w-6 h-6 bg-sage-600 rounded flex items-center justify-center text-white text-[10px]">
-              📋
-            </div>
-            <span className="text-[11px] font-bold text-sage-600 uppercase tracking-[0.2em]">
-              Assessment Complete
-            </span>
-          </div>
-          <div className="p-8 md:p-10">
-            <ReactMarkdown
-              components={{
-                h2: ({ ...props }) => (
-                  <h2 className="text-2xl font-display font-bold text-sage-800 mt-10 mb-5 pt-8 border-t border-sage-100 first:mt-0 first:pt-0 first:border-0" {...props} />
-                ),
-                p: ({ ...props }) => (
-                  <p className="text-stone-600 text-[1.05rem] leading-[1.7] mb-5 last:mb-0" {...props} />
-                ),
-                ul: ({ ...props }) => (
-                  <ul className="list-disc pl-5 mb-5 text-stone-600 space-y-2" {...props} />
-                ),
-                li: ({ ...props }) => (
-                  <li className="leading-relaxed" {...props} />
-                ),
-                strong: ({ ...props }) => (
-                  <strong className="font-bold text-sage-900" {...props} />
-                )
-              }}
-            >
-              {formattedMessage}
-            </ReactMarkdown>
-          </div>
-          <div className="bg-sage-50/30 px-10 py-4 border-t border-sage-100 flex justify-between items-center">
-            <span className="text-[10px] text-stone-400 italic">Solace-AI Intelligence Report</span>
-            <span className="text-[10px] text-sage-400 font-medium">Session Concluded</span>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
+export default function MessageBubble({ message, isUser }) {
   if (isUser) {
     return (
       <div className="flex items-end gap-2.5 justify-end animate-fadeUp">

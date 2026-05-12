@@ -1,11 +1,11 @@
-import SeverityBadge from './SeverityBadge'
+import EmotionBadge from './EmotionBadge'
 
 export default function Topbar({ 
   isSidebarOpen, 
   onToggleSidebar, 
-  severity, 
-  category, 
-  confidence,
+  emotions,
+  primaryEmotion,
+  confidences,
   onNewChat 
 }) {
   return (
@@ -30,13 +30,13 @@ export default function Topbar({
         + New Chat
       </button>
 
-      {/* Severity Badge */}
-      {severity && (
+      {/* Emotion Badge */}
+      {emotions && emotions.length > 0 && (
         <div className="w-full">
-          <SeverityBadge 
-            severity={severity}
-            category={category}
-            confidence={confidence}
+          <EmotionBadge 
+            emotions={emotions}
+            primaryEmotion={primaryEmotion}
+            confidences={confidences}
             visible={true}
           />
         </div>

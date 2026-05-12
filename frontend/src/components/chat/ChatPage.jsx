@@ -15,7 +15,6 @@ export default function ChatPage() {
     messages,
     currentSessionId,
     isStreaming,
-    isConcluded,
     questionCount,
     currentAnalysis,
     loadSessions,
@@ -43,7 +42,6 @@ export default function ChatPage() {
         currentSessionId: response.session_id,
         messages: [{ role: 'bot', content: response.message }],
         isStreaming: false,
-        isConcluded: response.concluded || false,
         questionCount: response.question_count || 0,
         currentAnalysis: null,
       })
@@ -61,20 +59,16 @@ export default function ChatPage() {
       setIsLoading(true)
       const response = await chatService.getSession(sessionId)
       const sessionHistory = response.history || []
-      if (response.concluded && sessionHistory.length > 0) {
-        sessionHistory[sessionHistory.length - 1].isConclusion = true
-      }
       useChatStore.setState({
         currentSessionId: sessionId,
         messages: sessionHistory,
         isStreaming: false,
-        isConcluded: response.concluded || false,
         questionCount: response.question_count || 0,
-        currentAnalysis: {
-          severity: response.final_severity,
-          category: response.final_category,
-          confidence: null,
-        },
+        currentAnalysis: response.final_emotion ? {
+          emotions: [response.final_emotion],
+          primaryEmotion: response.final_emotion,
+          confidences: {},
+        } : null,
       })
       setHasStarted(true)
     } catch (error) {
@@ -101,25 +95,12 @@ export default function ChatPage() {
         if (event.type === 'analysis') {
           useChatStore.setState({
             currentAnalysis: {
-              severity: event.severity,
-              category: event.category,
-              confidence: event.sev_conf,
+              emotions: event.emotions || [],
+              primaryEmotion: event.primary_emotion,
+              confidences: event.confidences || {},
             },
             questionCount: event.question_count,
           })
-          return
-        }
-
-        if (event.type === 'concluding') {
-          const currentMessages = useChatStore.getState().messages
-          const lastMessage = currentMessages[currentMessages.length - 1]
-          if (lastMessage && lastMessage.role === 'bot') {
-            const updated = [
-              ...currentMessages.slice(0, -1),
-              { ...lastMessage, isConclusion: true },
-            ]
-            useChatStore.setState({ messages: updated })
-          }
           return
         }
 
@@ -136,18 +117,8 @@ export default function ChatPage() {
         }
 
         if (event.type === 'done') {
-          const currentMessages = useChatStore.getState().messages
-          const lastMessage = currentMessages[currentMessages.length - 1]
-          if (lastMessage && lastMessage.role === 'bot' && event.concluded) {
-            const updated = [
-              ...currentMessages.slice(0, -1),
-              { ...lastMessage, isConclusion: true },
-            ]
-            useChatStore.setState({ messages: updated })
-          }
           useChatStore.setState({
             isStreaming: false,
-            isConcluded: event.concluded || false,
             questionCount: event.question_count || questionCount,
           })
           return
@@ -180,9 +151,9 @@ export default function ChatPage() {
           <Topbar
             isSidebarOpen={sidebarOpen}
             onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-            severity={currentAnalysis?.severity}
-            category={currentAnalysis?.category}
-            confidence={currentAnalysis?.confidence}
+            emotions={currentAnalysis?.emotions}
+            primaryEmotion={currentAnalysis?.primaryEmotion}
+            confidences={currentAnalysis?.confidences}
             onNewChat={handleNewChat}
           />
         )}
@@ -199,9 +170,6 @@ export default function ChatPage() {
           <InputArea
             onSendMessage={handleSendMessage}
             isLoading={isLoading}
-            isConcluded={isConcluded}
-            questionCount={questionCount}
-            maxQuestions={10}
           />
         )}
       </div>
