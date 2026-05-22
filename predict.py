@@ -127,8 +127,8 @@ class Predictor:
 
         checkpoint = torch.load(MODEL_PATH, map_location=DEVICE, weights_only=False)
 
-        self.emo_classes = checkpoint["emo_classes"]
-        bert_name        = checkpoint["bert_name"]
+        self.emo_classes = checkpoint.get("emo_classes", checkpoint.get("cat_classes"))
+        bert_name        = checkpoint.get("bert_name", "bert-base-uncased")
 
         # Load config for architecture params
         if os.path.exists(CONFIG_PATH):

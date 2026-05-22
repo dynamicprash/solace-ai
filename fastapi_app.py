@@ -366,6 +366,8 @@ async def api_message(request: Request):
                     sess.predictions = preds
                     dom_emotions, primary_emotion = cs.dominant_prediction(preds)
                     sess.final_category = primary_emotion  # reuse column for primary emotion
+                    current_severity = cs.calculate_severity(pred.get("confidences", {}))
+                    sess.final_severity = current_severity
 
                     analysis_event = {
                         "type": "analysis",
@@ -449,6 +451,63 @@ async def api_message(request: Request):
         },
     )
 
+
+@app.post("/api/end")
+async def api_end_session(request: Request, db: AsyncSession = Depends(get_db)):
+    if not request.session.get("user_id"):
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
+    
+    data = await request.json()
+    session_id = data.get("session_id")
+    user_id = request.session["user_id"]
+    
+    sess = await crud.fetch_owned_session(db, session_id, user_id)
+    if not sess:
+        return JSONResponse({"error": "Session not found"}, status_code=404)
+        
+    sess.concluded = True
+    await db.commit()
+    
+    chat = chat_session_to_app_dict(sess)
+    severity = sess.final_severity or "low"
+    
+    # Generate a final summary from Groq
+    gpt_client = _client()
+    if not gpt_client:
+        final_message = "Session concluded. Thank you for sharing."
+    else:
+        system_content = (
+            "You are Solace-AI. The user has chosen to end the session. "
+            "Provide a compassionate, validating closing summary of what was discussed. "
+            "Keep it under 4 sentences. Do NOT ask any follow-up questions."
+        )
+        if severity == "high":
+            system_content += (
+                "\n\nIMPORTANT: The user has expressed high severity crisis emotions. "
+                "You MUST include the following crisis management steps and Nepal helpline numbers at the end of your response:\n"
+                "- National Suicide Prevention Helpline — Call 1166 (24/7)\n"
+                "- Patan Hospital Helpline — Call 9840021212\n"
+                "- TPO Nepal Toll Free — 1660-01-02005\n"
+                "Please urge them gently to reach out for professional support."
+            )
+            
+        messages = [{"role": "system", "content": system_content}] + cs.gpt_history(chat)
+        try:
+            resp = await asyncio.to_thread(
+                gpt_client.chat.completions.create,
+                model="llama-3.3-70b-versatile",
+                messages=messages,
+                max_tokens=250,
+                temperature=0.7,
+            )
+            final_message = resp.choices[0].message.content.strip()
+        except Exception:
+            final_message = "Session concluded. Please take care of yourself."
+            
+    await crud.add_bot_message(db, sess, final_message)
+    await db.commit()
+    
+    return JSONResponse({"ok": True, "message": final_message})
 
 @app.get("/api/history")
 async def api_history(request: Request, db: AsyncSession = Depends(get_db)):

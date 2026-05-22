@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 
-export default function InputArea({ 
-  onSendMessage, 
-  isLoading, 
+export default function InputArea({
+  onSendMessage,
+  isLoading,
 }) {
   const [message, setMessage] = useState('')
   const textareaRef = useRef(null)
@@ -51,7 +51,7 @@ export default function InputArea({
             {isLoading ? '⟳' : '→'}
           </button>
         </div>
-        
+
         <div className="mt-1.5 text-xs text-stone-500 text-center">
           <kbd className="bg-stone-300 rounded px-1.5 py-0.5 font-mono text-xs">
             Enter

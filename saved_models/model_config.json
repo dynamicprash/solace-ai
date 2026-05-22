@@ -20,6 +20,6 @@
     "Surprise",
     "Neutral"
   ],
-  "best_epoch": 9,
-  "best_f1_micro": 0.45053557903848235
+  "best_epoch": 10,
+  "best_f1_micro": 0.44763995609220636
 }

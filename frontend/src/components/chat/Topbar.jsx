@@ -1,12 +1,12 @@
 import EmotionBadge from './EmotionBadge'
 
-export default function Topbar({ 
-  isSidebarOpen, 
-  onToggleSidebar, 
+export default function Topbar({
+  isSidebarOpen,
+  onToggleSidebar,
   emotions,
   primaryEmotion,
   confidences,
-  onNewChat 
+  onNewChat
 }) {
   return (
     <div className="flex items-start gap-3 p-2.5 bg-warm-white border-b border-stone-200 min-h-15 flex-shrink-0 flex-wrap">
@@ -33,7 +33,7 @@ export default function Topbar({
       {/* Emotion Badge */}
       {emotions && emotions.length > 0 && (
         <div className="w-full">
-          <EmotionBadge 
+          <EmotionBadge
             emotions={emotions}
             primaryEmotion={primaryEmotion}
             confidences={confidences}

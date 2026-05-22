@@ -17,6 +17,24 @@ def hash_pw(password: str) -> str:
     return hashlib.sha256((password + SECRET_KEY).encode()).hexdigest()
 
 
+CRISIS_EMOTIONS = {"Sadness", "Anxiety", "Guilt", "Anger"}
+
+def calculate_severity(confidences: dict) -> str:
+    """
+    Calculate severity based on max confidence among crisis-related emotions.
+    Returns "high", "medium", or "low".
+    """
+    max_crisis_conf = 0.0
+    for emo, conf in confidences.items():
+        if emo in CRISIS_EMOTIONS and conf > max_crisis_conf:
+            max_crisis_conf = conf
+
+    if max_crisis_conf > 0.7:
+        return "high"
+    if max_crisis_conf > 0.4:
+        return "medium"
+    return "low"
+
 def dominant_prediction(predictions: list) -> tuple:
     """
     Aggregate multi-label emotion predictions across a session.
