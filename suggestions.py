@@ -55,6 +55,46 @@ def _client():
     return Groq(api_key=key)
 
 
+def translate_to_english(text: str) -> str:
+    """
+    Translates user text (e.g. Devanagari or Romanized Nepali) to English in the background
+    for safety checks and local emotion model prediction.
+    If it is already in English, returns it mostly unchanged.
+    """
+    client = _client()
+    if not client:
+        return text
+
+    prompt = (
+        "You are an expert translator specializing in translating Devanagari Nepali and Romanized Nepali "
+        "(Nepali written in Latin characters) to English.\n"
+        "Translate the input text to English. If it is already in English, return it exactly as is.\n\n"
+        "Here are some examples of Romanized Nepali translations for context:\n"
+        "- 'tapailai kasto cha' -> 'How are you?'\n"
+        "- 'malai afu lai hani purauna man cha' -> 'I want to harm myself.'\n"
+        "- 'malai marna man cha' -> 'I want to die.'\n"
+        "- 'yo sansar chorna man cha' -> 'I want to leave this world.'\n"
+        "- 'ma sahana sakdina' -> 'I cannot bear this.'\n"
+        "- 'malai garho vako cha' -> 'I am having a hard time.'\n\n"
+        "Output ONLY the English translation, without any explanations, conversational filler, introductory text, or quotation marks.\n\n"
+        f"Input: {text}\n"
+        "Translation:"
+    )
+
+    try:
+        resp = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=250,
+            temperature=0.0,
+        )
+        translated = resp.choices[0].message.content.strip().strip('"').strip("'").strip()
+        return translated if translated else text
+    except Exception:
+        return text
+
+
+
 # ── Fact extraction ──────────────────────────────────────────────────────────
 
 def extract_facts(user_message, client=None):
@@ -200,12 +240,14 @@ CONVERSATION TURN: {turn_count}
 
 RULES:
 - Respond naturally and conversationally — you are a supportive companion, not a clinical tool
+- Match the user's language and script style. If the user writes in Devanagari script, reply in Devanagari Nepali. If the user writes in Romanized Nepali (Nepali written in Latin script like 'ali thik chaina'), reply in Romanized Nepali. If the user writes in English, reply in English.
 - Ask ONE thoughtful follow-up question at the end of your response
 - Keep responses concise (2-4 sentences + question)
 - Never diagnose or prescribe — you are not a doctor
 - Never mention "AI analysis", "detected emotions", or technical details
 - Use the person's own words and experiences to show you're listening
-- If they share something positive, celebrate it genuinely"""
+- If they share something positive, celebrate it genuinely
+- CRITICAL SAFETY: If the user expresses any intent, thoughts, or actions of self-harm, suicide, or violence against others, you MUST refuse to continue the conversation. Politely and directly direct them to contact a crisis hotline (Nepal Call 1166) or professional help, and ask if there's anything else you can help with. Do not explore or validate violent thoughts."""
 
 
 # ── Streaming (used by fastapi_app.py) ───────────────────────────────────────

@@ -97,3 +97,30 @@ def add_bot_msg(chat_session: dict, text: str):
     )
     chat_session["question_count"] += 1
     chat_session["updated_at"] = datetime.utcnow().isoformat()
+
+
+import re
+
+HARM_PATTERNS = [
+    # Suicide & Self-Harm
+    r"\b(kill\s+myself|suicide|end\s+my\s+life|want\s+to\s+die|hang\s+myself|cut\s+myself|harm\s+myself|hurt\s+myself|overdose)\b",
+    r"\b(going\s+to|planning\s+to|want\s+to|will)\s+(kill\s+myself|suicide|end\s+my\s+life|cut\s+myself|harm\s+myself|overdose)\b",
+    
+    # Homicide & Violence to Others
+    r"\b(kill\s+someone|murder\s+someone|kill\s+you|murder\s+you|stab\s+someone|shoot\s+someone|hurt\s+someone|harm\s+someone)\b",
+    r"\b(going\s+to|planning\s+to|want\s+to|will)\s+(kill|murder|stab|shoot|harm)\s+(someone|you|people|them|her|him)\b",
+    
+    # Past violent crime confessions
+    r"\b(killed\s+someone|murdered\s+someone|stabbed\s+someone|shot\s+someone)\b",
+]
+
+def check_safety_violation(text: str) -> tuple[bool, str | None]:
+    """
+    Check if the user input contains expressions of intent/actions of self-harm or violence.
+    Returns (is_violated, violation_type).
+    """
+    text_clean = text.lower().strip()
+    for pattern in HARM_PATTERNS:
+        if re.search(pattern, text_clean):
+            return True, "harm"
+    return False, None

@@ -1,15 +1,25 @@
 import ReactMarkdown from 'react-markdown';
 
-export default function MessageBubble({ message, isUser }) {
+export default function MessageBubble({ message, isUser, prediction }) {
   if (isUser) {
+    const primaryEmotion = prediction?.primary_emotion
+    
     return (
-      <div className="flex items-end gap-2.5 justify-end animate-fadeUp">
-        <div className="max-w-[min(640px,90%)] p-3.5 px-4.5 rounded-3xl rounded-br text-base leading-relaxed bg-sage-700 text-white">
-          {message}
+      <div className="flex flex-col items-end gap-1.5 justify-end w-full animate-fadeUp">
+        <div className="flex items-end gap-2.5 justify-end w-full">
+          <div className="max-w-[min(640px,90%)] p-3.5 px-4.5 rounded-3xl rounded-br text-base leading-relaxed bg-sage-700 text-white">
+            {message}
+          </div>
+          <div className="w-8.5 h-8.5 rounded-full bg-sage-700 text-white flex items-center justify-center text-xs font-semibold tracking-wide flex-shrink-0">
+            You
+          </div>
         </div>
-        <div className="w-8.5 h-8.5 rounded-full bg-sage-700 text-white flex items-center justify-center text-xs font-semibold tracking-wide flex-shrink-0">
-          You
-        </div>
+        {primaryEmotion && (
+          <div className="mr-11 text-[10px] text-sage-600/70 font-semibold uppercase tracking-wider flex items-center gap-1.5 animate-fadeIn">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span>AI NLP Indicator: {primaryEmotion}</span>
+          </div>
+        )}
       </div>
     )
   }
@@ -17,8 +27,8 @@ export default function MessageBubble({ message, isUser }) {
   // Bot message
   return (
     <div className="flex items-end gap-2.5 animate-fadeUp">
-      <div className="w-8.5 h-8.5 rounded-full bg-sage-100 flex items-center justify-center text-lg flex-shrink-0 border border-sage-200">
-        <div className="w-4 h-4 bg-sage-500 rounded-full" />
+      <div className="w-8.5 h-8.5 rounded-full bg-sage-100 flex items-center justify-center text-base flex-shrink-0 border border-sage-200 select-none">
+        🌿
       </div>
       <div className="max-w-[min(640px,90%)] p-4 px-5 rounded-3xl rounded-bl text-[0.95rem] leading-relaxed bg-white text-stone-800 border border-slate-200 shadow-sm">
         <ReactMarkdown

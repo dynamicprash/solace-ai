@@ -12,6 +12,43 @@ import EngagementHeatmap from './charts/EngagementHeatmap'
 import SessionDepthChart from './charts/SessionDepthChart'
 import CopingToolkit from './charts/CopingToolkit'
 
+import DominantEmotionChart from './charts/DominantEmotionChart'
+import WeeklyEmotionTrends from './charts/WeeklyEmotionTrends'
+import StressCurveChart from './charts/StressCurveChart'
+import EmotionIntensityHeatmap from './charts/EmotionIntensityHeatmap'
+import EmotionComparisonCard from './charts/EmotionComparisonCard'
+import WellbeingPulseHistory from './charts/WellbeingPulseHistory'
+
+const EMOTION_BADGE_STYLE = {
+  anxiety: 'bg-amber-50 text-amber-700 border-amber-100',
+  sadness: 'bg-blue-50 text-blue-700 border-blue-100',
+  anger: 'bg-rose-50 text-rose-700 border-rose-100',
+  guilt: 'bg-pink-50 text-pink-700 border-pink-100',
+  love: 'bg-pink-50 text-pink-700 border-pink-100',
+  joy: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+  neutral: 'bg-slate-50 text-slate-700 border-slate-100',
+  grief: 'bg-indigo-50 text-indigo-700 border-indigo-100',
+  fear: 'bg-violet-50 text-violet-700 border-violet-100',
+  shame: 'bg-stone-50 text-stone-700 border-stone-100',
+  pride: 'bg-teal-50 text-teal-700 border-teal-100',
+  relief: 'bg-cyan-50 text-cyan-700 border-cyan-100',
+  surprise: 'bg-orange-50 text-orange-700 border-orange-100',
+}
+
+function getEmotionBadgeClass(emotion) {
+  if (!emotion) return 'bg-slate-50 text-slate-600 border-slate-100'
+  return EMOTION_BADGE_STYLE[emotion.toLowerCase()] || 'bg-sage-50 text-sage-700 border-sage-100'
+}
+
+function getSeverityColor(sev) {
+  switch (sev?.toLowerCase()) {
+    case 'high': return 'bg-rose-500'
+    case 'medium': return 'bg-amber-500'
+    case 'low': return 'bg-emerald-500'
+    default: return 'bg-slate-400'
+  }
+}
+
 const TABS = [
   { id: 'overview', label: 'Overview', icon: null },
   { id: 'emotions', label: 'Emotions', icon: null },
@@ -30,6 +67,48 @@ export default function DashboardPage() {
   const [analytics, setAnalytics] = useState(null)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
+  const [exporting, setExporting] = useState(false)
+  const [emailing, setEmailing] = useState(false)
+  const [toast, setToast] = useState(null)
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 5000)
+  }
+
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      const blob = await chatService.exportAnalyticsCSV()
+      const url = window.URL.createObjectURL(new Blob([blob]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `solace_ai_wellness_report_${new Date().toISOString().slice(0, 10)}.csv`)
+      document.body.appendChild(link)
+      link.click()
+      link.parentNode.removeChild(link)
+      showToast('CSV downloaded successfully', 'success')
+    } catch (err) {
+      console.error('Export failed', err)
+      showToast(err.message || 'Export failed', 'error')
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  const handleEmailReport = async () => {
+    setEmailing(true)
+    try {
+      const resp = await chatService.emailReport()
+      showToast(resp.message || 'Report sent to your email!', 'success')
+    } catch (err) {
+      console.error('Email report failed', err)
+      const msg = err.response?.data?.error || err.message || 'Failed to email report'
+      showToast(msg, 'error')
+    } finally {
+      setEmailing(false)
+    }
+  }
 
   useEffect(() => {
     if (!userName) {
@@ -91,7 +170,19 @@ export default function DashboardPage() {
   )
 
   return (
-    <div className="min-h-screen bg-cream px-4 sm:px-6 py-6">
+    <div className="min-h-screen bg-cream px-4 sm:px-6 py-6 relative">
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-2xl border text-sm font-medium shadow-lg animate-fadeUp flex items-center gap-2 ${
+          toast.type === 'success' 
+            ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+            : 'bg-rose-50 border-rose-200 text-rose-800'
+        }`}>
+          <span>{toast.type === 'success' ? '✅' : '❌'}</span>
+          <span>{toast.message}</span>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
@@ -109,7 +200,27 @@ export default function DashboardPage() {
               Your mental health insights
             </h1>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="px-4 py-2 bg-white text-sage-700 border border-sage-200 rounded-xl text-sm font-medium hover:bg-sage-50 transition disabled:opacity-50 flex items-center gap-1.5"
+            >
+              {exporting ? (
+                <span className="inline-block animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-sage-600 animate-spin" />
+              ) : '📥'}
+              <span>Export CSV</span>
+            </button>
+            <button
+              onClick={handleEmailReport}
+              disabled={emailing}
+              className="px-4 py-2 bg-white text-sage-700 border border-sage-200 rounded-xl text-sm font-medium hover:bg-sage-50 transition disabled:opacity-50 flex items-center gap-1.5"
+            >
+              {emailing ? (
+                <span className="inline-block animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-sage-600 animate-spin" />
+              ) : '✉️'}
+              <span>Email Report</span>
+            </button>
             <button
               onClick={() => navigate('/journal')}
               className="px-4 py-2 bg-white text-sage-700 border border-sage-200 rounded-xl text-sm font-medium hover:bg-sage-50 transition"
@@ -191,7 +302,8 @@ export default function DashboardPage() {
                     title="Wellbeing Pulse"
                     subtitle="Your composite mental health score"
                   >
-                    <WellbeingPulse data={analytics?.wellbeing_pulse} />
+                     <WellbeingPulse data={analytics?.wellbeing_pulse} />
+                     <WellbeingPulseHistory sessions={sessions} />
                   </ChartCard>
 
                   {/* Severity Journey */}
@@ -204,7 +316,25 @@ export default function DashboardPage() {
                   </ChartCard>
                 </div>
 
-                {/* Weekly + Severity distribution (existing) */}
+                {/* Weekly Emotion Trends & Comparison */}
+                <div className="grid gap-6 lg:grid-cols-3">
+                  <ChartCard
+                    title="Weekly Emotion Trends"
+                    subtitle="How your emotions trend week-over-week"
+                    className="lg:col-span-2"
+                  >
+                    <WeeklyEmotionTrends data={analytics?.weekly_emotion_trends} />
+                  </ChartCard>
+                  <ChartCard
+                    title="Weekly Comparison"
+                    subtitle="Changes in your emotional patterns"
+                    className="lg:col-span-1"
+                  >
+                    <EmotionComparisonCard data={analytics?.weekly_emotion_trends} />
+                  </ChartCard>
+                </div>
+
+                {/* Weekly + Severity distribution */}
                 <div className="grid gap-6 lg:grid-cols-2">
                   <ChartCard title="📅 Weekly Chats" subtitle="Sessions per day this week">
                     <div className="space-y-3">
@@ -279,24 +409,36 @@ export default function DashboardPage() {
                       sessions.slice(0, 5).map((session) => (
                         <div
                           key={session.session_id}
-                          className="rounded-2xl border border-slate-200 p-4 hover:border-sage-300 transition cursor-pointer"
+                          className="rounded-2xl border border-slate-200 bg-white p-4 hover:border-sage-300 transition cursor-pointer hover:shadow-sm"
                           onClick={() => navigate('/chat')}
                         >
-                          <div className="flex items-start justify-between gap-4">
-                            <div>
-                              <p className="text-sm text-sage-900 font-semibold">
-                                {session.title || 'Untitled chat'}
-                              </p>
-                              <p className="text-xs text-stone-500 mt-1">
-                                {new Date(session.created_at).toLocaleString()} •{' '}
-                                {session.question_count} questions
-                              </p>
-                            </div>
-                            <div className="text-right text-xs text-stone-500">
-                              <div>{session.concluded ? 'Completed' : 'Open'}</div>
-                              <div className="mt-1 capitalize">
-                                {session.final_severity || 'No severity'}
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                              <span
+                                className={`w-3 h-3 rounded-full flex-shrink-0 ${getSeverityColor(session.final_severity)}`}
+                                title={`Severity: ${session.final_severity || 'Unknown'}`}
+                              />
+                              <div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <p className="text-sm text-sage-900 font-semibold">
+                                    {session.title || 'Untitled chat'}
+                                  </p>
+                                  {session.final_category && (
+                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${getEmotionBadgeClass(session.final_category)}`}>
+                                      {session.final_category}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-stone-500 mt-1">
+                                  {new Date(session.created_at).toLocaleString()} •{' '}
+                                  {session.question_count} questions
+                                </p>
                               </div>
+                            </div>
+                            <div className="text-right text-xs">
+                              <span className={`px-2.5 py-1 rounded-full font-semibold ${session.concluded ? 'bg-sage-100 text-sage-800' : 'bg-amber-100 text-amber-800'}`}>
+                                {session.concluded ? 'Completed' : 'Open'}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -316,6 +458,23 @@ export default function DashboardPage() {
                 >
                   <EmotionTideChart data={analytics?.emotion_timeline} />
                 </ChartCard>
+
+                <div className="grid gap-6 lg:grid-cols-3">
+                  <ChartCard
+                    title="Dominant Emotions"
+                    subtitle="Distribution of primary emotions across all sessions"
+                    className="lg:col-span-1"
+                  >
+                    <DominantEmotionChart data={analytics?.dominant_distribution} />
+                  </ChartCard>
+                  <ChartCard
+                    title="Stress Curve"
+                    subtitle="Distress level and composite index trends"
+                    className="lg:col-span-2"
+                  >
+                    <StressCurveChart data={analytics?.stress_curve} />
+                  </ChartCard>
+                </div>
 
                 <div className="grid gap-6 lg:grid-cols-2">
                   <ChartCard
@@ -343,6 +502,13 @@ export default function DashboardPage() {
                   subtitle="When do you tend to reach out for support? Patterns by day and hour."
                 >
                   <EngagementHeatmap data={analytics?.engagement_heatmap} />
+                </ChartCard>
+
+                <ChartCard
+                  title="Emotion Intensity Heatmap"
+                  subtitle="Average distress intensity patterns by day of week and hour of day"
+                >
+                  <EmotionIntensityHeatmap data={analytics?.emotion_intensity_heatmap} />
                 </ChartCard>
 
                 <ChartCard

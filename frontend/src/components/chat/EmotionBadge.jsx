@@ -26,7 +26,6 @@ export default function EmotionBadge({ emotions = [], primaryEmotion, confidence
   return (
     <div className={`${config.bg} border-2 ${config.border} rounded-2xl p-2.5 px-3.5 block animate-fadeIn`}>
       <div className="flex items-center gap-2 mb-2">
-        <div className="text-lg">{config.emoji}</div>
         <div className="flex-1">
           <div className="text-sm font-medium text-stone-800">
             {primary}
@@ -40,7 +39,7 @@ export default function EmotionBadge({ emotions = [], primaryEmotion, confidence
                     key={emo}
                     className={`text-[10px] px-1.5 py-0.5 rounded-full ${emoConf.bg} ${emoConf.color} font-medium`}
                   >
-                    {emoConf.emoji} {emo}
+                    {emo}
                   </span>
                 )
               })}

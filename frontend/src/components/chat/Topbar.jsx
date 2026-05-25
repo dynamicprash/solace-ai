@@ -6,7 +6,10 @@ export default function Topbar({
   emotions,
   primaryEmotion,
   confidences,
-  onNewChat
+  onNewChat,
+  onEndSession,
+  isConcluded,
+  hasActiveSession,
 }) {
   return (
     <div className="flex items-start gap-3 p-2.5 bg-warm-white border-b border-stone-200 min-h-15 flex-shrink-0 flex-wrap">
@@ -21,6 +24,16 @@ export default function Topbar({
 
       {/* Center Area - Title or empty */}
       <div className="flex-1" />
+
+      {/* End Session Button */}
+      {hasActiveSession && !isConcluded && (
+        <button
+          onClick={onEndSession}
+          className="px-4 py-2 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg font-body text-sm font-medium cursor-pointer whitespace-nowrap hover:bg-amber-100 hover:border-amber-300 transition-colors"
+        >
+          End Session
+        </button>
+      )}
 
       {/* New Chat Button */}
       <button
@@ -44,3 +57,4 @@ export default function Topbar({
     </div>
   )
 }
+

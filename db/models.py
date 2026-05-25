@@ -24,6 +24,13 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+    email: Mapped[Optional[str]] = mapped_column(String(255), unique=True, nullable=True, index=True)
+    email_verified: Mapped[bool] = mapped_column(default=False, server_default=text("false"))
+    verification_code: Mapped[Optional[str]] = mapped_column(String(6), nullable=True)
+    verification_expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_login_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_inactivity_email_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    wants_email_notifications: Mapped[bool] = mapped_column(default=True, server_default=text("true"))
 
     sessions: Mapped[list["ChatSession"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"

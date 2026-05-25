@@ -4,10 +4,10 @@ import { useChatStore } from '../../store/chatStore'
 import { useAuthStore } from '../../store/authStore'
 import { chatService } from '../../services/chat'
 
-export default function Sidebar({ isOpen, onNewChat, onSelectSession }) {
+export default function Sidebar({ isOpen, onNewChat, onSelectSession, onLogout, onNavigate }) {
   const navigate = useNavigate()
   const { pastSessions, currentSessionId, loadSessions, resetChat } = useChatStore()
-  const { userName, logout } = useAuthStore()
+  const { userName } = useAuthStore()
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -19,7 +19,9 @@ export default function Sidebar({ isOpen, onNewChat, onSelectSession }) {
   }
 
   const handleLogout = async () => {
-    await logout()
+    if (onLogout) {
+      await onLogout()
+    }
   }
 
   const handleDeleteSession = async (sessionId, e) => {
@@ -71,14 +73,14 @@ export default function Sidebar({ isOpen, onNewChat, onSelectSession }) {
           New Chat
         </button>
         <button
-          onClick={() => navigate('/dashboard')}
+          onClick={() => onNavigate ? onNavigate('/dashboard') : navigate('/dashboard')}
           className="w-full p-3 bg-emerald-600 text-white rounded-xl text-sm font-body font-medium hover:bg-emerald-700 transition-all border border-emerald-600"
           style={{ backgroundColor: '#2f7a4e' }}
         >
           Dashboard
         </button>
         <button
-          onClick={() => navigate('/journal')}
+          onClick={() => onNavigate ? onNavigate('/journal') : navigate('/journal')}
           className="w-full p-3 bg-emerald-600 text-white rounded-xl text-sm font-body font-medium hover:bg-emerald-700 transition-all border border-emerald-600"
           style={{ backgroundColor: '#2f7a4e' }}
         >
@@ -98,7 +100,7 @@ export default function Sidebar({ isOpen, onNewChat, onSelectSession }) {
                 <div
                   key={session.session_id}
                   onClick={() => onSelectSession(session.session_id)}
-                  className={`p-2.5 rounded-lg cursor-pointer mb-0.5 transition-colors ${currentSessionId === session.session_id
+                  className={`group p-2.5 rounded-lg cursor-pointer mb-0.5 transition-colors ${currentSessionId === session.session_id
                     ? 'bg-emerald-900/40 border border-emerald-800'
                     : 'hover:bg-emerald-950/40'
                     }`}
@@ -112,7 +114,7 @@ export default function Sidebar({ isOpen, onNewChat, onSelectSession }) {
                       <span className={`w-2.5 h-2.5 rounded-full ${severityClass(severity)}`} />
                       <button
                         onClick={(e) => handleDeleteSession(session.session_id, e)}
-                        className={`bg-none border-none text-white/20 cursor-pointer text-base p-0 rounded hover:text-red-300/70 transition-colors ${currentSessionId === session.session_id ? 'block' : 'hidden'
+                        className={`bg-none border-none text-white/20 cursor-pointer text-base p-0 rounded hover:text-red-300/70 transition-colors ${currentSessionId === session.session_id ? 'block' : 'hidden group-hover:block'
                           }`}
                         title="Delete chat"
                       >

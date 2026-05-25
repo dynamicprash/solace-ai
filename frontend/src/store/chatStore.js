@@ -4,10 +4,12 @@ import { chatService } from '../services/chat'
 export const useChatStore = create((set, get) => ({
   currentSessionId: null,
   messages: [],
+  predictions: [],
   isStreaming: false,
   questionCount: 0,
   pastSessions: [],
   currentAnalysis: null,
+  isConcluded: false,
 
   addMessage: (message) => {
     const messages = get().messages
@@ -23,6 +25,8 @@ export const useChatStore = create((set, get) => ({
 
   setCurrentSessionId: (id) => set({ currentSessionId: id }),
 
+  setConcluded: (value) => set({ isConcluded: value }),
+
   incrementQuestionCount: () => {
     const current = get().questionCount
     set({ questionCount: current + 1 })
@@ -31,9 +35,11 @@ export const useChatStore = create((set, get) => ({
   resetChat: () => {
     set({
       messages: [],
+      predictions: [],
       isStreaming: false,
       questionCount: 0,
       currentAnalysis: null,
+      isConcluded: false,
     })
   },
 
@@ -43,6 +49,30 @@ export const useChatStore = create((set, get) => ({
       set({ pastSessions: response || [] })
     } catch (error) {
       console.error('Failed to load sessions', error)
+    }
+  },
+
+  endSession: async () => {
+    const sessionId = get().currentSessionId
+    if (!sessionId) return
+    try {
+      set({ isStreaming: true })
+      const response = await chatService.endSession(sessionId)
+      if (response.ok && response.message) {
+        const messages = get().messages
+        set({
+          messages: [
+            ...messages,
+            { id: `msg-end-${Date.now()}`, role: 'assistant', content: response.message }
+          ],
+          isConcluded: true,
+          isStreaming: false,
+        })
+        await get().loadSessions()
+      }
+    } catch (error) {
+      console.error('Failed to end session', error)
+      set({ isStreaming: false })
     }
   },
 }))

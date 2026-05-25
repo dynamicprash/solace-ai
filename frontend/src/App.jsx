@@ -1,8 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
+import { useEffect, useState, useMemo } from 'react'
 import { useAuthStore } from './store/authStore'
 import { authService } from './services/auth'
 import LoginPage from './components/auth/LoginPage'
+import VerifyEmailPage from './components/auth/VerifyEmailPage'
 import ChatPage from './components/chat/ChatPage'
 import DashboardPage from './components/dashboard/DashboardPage'
 import JournalPage from './components/journal/JournalPage'
@@ -33,6 +34,37 @@ export default function App() {
     checkAuth()
   }, [setUser, setAuthenticated])
 
+  const router = useMemo(() => createBrowserRouter([
+    {
+      path: "/",
+      element: <LandingPage />
+    },
+    {
+      path: "/login",
+      element: isAuthenticated ? <Navigate to="/chat" replace /> : <LoginPage mode="login" />
+    },
+    {
+      path: "/register",
+      element: isAuthenticated ? <Navigate to="/chat" replace /> : <LoginPage mode="register" />
+    },
+    {
+      path: "/verify-email",
+      element: isAuthenticated ? <Navigate to="/chat" replace /> : <VerifyEmailPage />
+    },
+    {
+      path: "/chat",
+      element: isAuthenticated ? <ChatPage /> : <Navigate to="/login" replace />
+    },
+    {
+      path: "/dashboard",
+      element: isAuthenticated ? <DashboardPage /> : <Navigate to="/login" replace />
+    },
+    {
+      path: "/journal",
+      element: isAuthenticated ? <JournalPage /> : <Navigate to="/login" replace />
+    }
+  ]), [isAuthenticated])
+
   if (isLoading) {
     return (
       <div className="w-full h-screen flex items-center justify-center bg-cream">
@@ -44,25 +76,5 @@ export default function App() {
     )
   }
 
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={isAuthenticated ? <Navigate to="/chat" /> : <LoginPage mode="login" />} />
-        <Route path="/register" element={isAuthenticated ? <Navigate to="/chat" /> : <LoginPage mode="register" />} />
-        <Route
-          path="/chat"
-          element={isAuthenticated ? <ChatPage /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/dashboard"
-          element={isAuthenticated ? <DashboardPage /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/journal"
-          element={isAuthenticated ? <JournalPage /> : <Navigate to="/login" />}
-        />
-      </Routes>
-    </BrowserRouter>
-  )
+  return <RouterProvider router={router} />
 }

@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import Input from '../common/Input'
 import Button from '../common/Button'
 
 export default function LoginForm() {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -47,7 +49,15 @@ export default function LoginForm() {
       return
     }
 
-    await login(formData)
+    const result = await login(formData)
+    if (result?.verificationRequired) {
+      navigate('/verify-email', {
+        state: {
+          username: result.username,
+          email: result.email,
+        },
+      })
+    }
   }
 
   const displayError = authError || Object.values(errors)[0]

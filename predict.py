@@ -18,7 +18,13 @@ from transformers import BertTokenizer, BertModel
 # ── Paths ──────────────────────────────────────────────────────────────────
 MODEL_PATH  = os.path.join("saved_models", "bert_lstm_model.pt")
 CONFIG_PATH = os.path.join("saved_models", "model_config.json")
-DEVICE      = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# Defaulting to CPU to avoid CUDA OOM and Windows paging file issues during inference
+if os.environ.get("USE_CUDA", "0") == "1" and torch.cuda.is_available():
+    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+    DEVICE = torch.device("cuda")
+else:
+    DEVICE = torch.device("cpu")
 
 # Default threshold for multi-label classification
 DEFAULT_THRESHOLD = 0.3
@@ -161,10 +167,23 @@ class Predictor:
         self._load()
 
         if not isinstance(text, str) or not text.strip():
+            confidences = {c: 0.0 for c in self.emo_classes}
+            confidences["Neutral"] = 1.0
             return {
                 "emotions"        : ["Neutral"],
                 "primary_emotion" : "Neutral",
-                "confidences"     : {"Neutral": 1.0},
+                "confidences"     : confidences,
+                "emo_conf"        : 1.0,
+            }
+
+        # If the input doesn't contain any alphabetic characters (meaning it's only punctuation/dots/numbers/etc.), default to Neutral
+        if not any(c.isalpha() for c in text):
+            confidences = {c: 0.0 for c in self.emo_classes}
+            confidences["Neutral"] = 1.0
+            return {
+                "emotions"        : ["Neutral"],
+                "primary_emotion" : "Neutral",
+                "confidences"     : confidences,
                 "emo_conf"        : 1.0,
             }
 

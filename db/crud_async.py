@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Any
 
 from sqlalchemy import delete, func, select
@@ -28,16 +28,52 @@ async def get_user_by_id(db: AsyncSession, user_id: str) -> User | None:
 
 
 async def create_user(
-    db: AsyncSession, *, username: str, display_name: str, password_hash: str
+    db: AsyncSession, *, username: str, display_name: str, password_hash: str, email: str | None = None
 ) -> User:
     u = User(
         username=username,
         display_name=display_name,
         password_hash=password_hash,
+        email=email,
+        email_verified=False if email else True,
     )
     db.add(u)
     await db.flush()
     return u
+
+
+async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
+    r = await db.execute(select(User).where(User.email == email.strip().lower()))
+    return r.scalar_one_or_none()
+
+
+async def set_verification_code(db: AsyncSession, user: User, code: str, expires_in_minutes: int = 10) -> None:
+    user.verification_code = code
+    user.verification_expires_at = datetime.now(timezone.utc) + timedelta(minutes=expires_in_minutes)
+    await db.flush()
+
+
+async def verify_email_code(db: AsyncSession, user: User, code: str) -> bool:
+    if not user.verification_code or user.verification_code != code:
+        return False
+    
+    expires = user.verification_expires_at
+    if expires:
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=timezone.utc)
+        if datetime.now(timezone.utc) > expires:
+            return False
+            
+    user.email_verified = True
+    user.verification_code = None
+    user.verification_expires_at = None
+    await db.flush()
+    return True
+
+
+async def update_last_login(db: AsyncSession, user: User) -> None:
+    user.last_login_at = datetime.now(timezone.utc)
+    await db.flush()
 
 
 async def list_session_summaries(db: AsyncSession, user_id: str) -> list[dict[str, Any]]:
@@ -148,7 +184,7 @@ async def delete_owned_session(
     sess = await fetch_owned_session(db, session_id, user_id)
     if not sess:
         return False
-    db.delete(sess)
+    await db.delete(sess)
     return True
 
 

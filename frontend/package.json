@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "trigger-notifications": "node -e \"fetch('http://localhost:8000/api/test-notifications').then(res => res.json()).then(data => console.log(data)).catch(err => console.error(err))\""
   },
   "dependencies": {
     "axios": "^1.15.2",

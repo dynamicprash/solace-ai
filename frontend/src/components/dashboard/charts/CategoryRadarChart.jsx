@@ -5,9 +5,20 @@ import {
 
 const CATEGORY_DISPLAY = {
   anxiety: 'Anxiety',
+  sadness: 'Sadness',
+  anger: 'Anger',
+  guilt: 'Guilt',
+  love: 'Love',
+  joy: 'Joy',
+  neutral: 'Neutral',
+  grief: 'Grief',
+  fear: 'Fear',
+  shame: 'Shame',
+  pride: 'Pride',
+  relief: 'Relief',
+  surprise: 'Surprise',
   depression: 'Depression',
   self_harm: 'Self-harm',
-  neutral: 'General',
 }
 
 export default function CategoryRadarChart({ data }) {
@@ -19,19 +30,25 @@ export default function CategoryRadarChart({ data }) {
     )
   }
 
-  const chartData = Object.entries(data).map(([key, value]) => ({
-    category: CATEGORY_DISPLAY[key] || key.charAt(0).toUpperCase() + key.slice(1),
-    confidence: Math.round(value * 100),
-    fullMark: 100,
-  }))
+  const chartData = Object.entries(data).map(([key, value]) => {
+    const keyLower = key.toLowerCase();
+    const display = CATEGORY_DISPLAY[keyLower] || key.charAt(0).toUpperCase() + key.slice(1);
+    return {
+      category: display,
+      confidence: Math.round(value * 100),
+      fullMark: 100,
+    }
+  })
 
-  // Ensure all 4 categories are present
-  const allCats = ['Anxiety', 'Depression', 'Self-harm', 'General']
-  allCats.forEach((cat) => {
+  // Radar charts need at least 3 points to display correctly.
+  // If we have fewer than 3, pad with some default categories at 0 confidence.
+  const defaultCats = ['Anxiety', 'Sadness', 'Neutral']
+  for (const cat of defaultCats) {
+    if (chartData.length >= 3) break
     if (!chartData.find((d) => d.category === cat)) {
       chartData.push({ category: cat, confidence: 0, fullMark: 100 })
     }
-  })
+  }
 
   return (
     <ResponsiveContainer width="100%" height={300}>

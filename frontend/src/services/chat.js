@@ -89,4 +89,19 @@ export const chatService = {
     const response = await apiClient.get('/api/dashboard/analytics')
     return response.data
   },
+
+  async endSession(sessionId) {
+    const response = await apiClient.post('/api/end', { session_id: sessionId })
+    return response.data
+  },
+
+  async exportAnalyticsCSV() {
+    const response = await apiClient.get('/api/dashboard/export', { responseType: 'blob' })
+    return response.data
+  },
+
+  async emailReport() {
+    const response = await apiClient.post('/api/dashboard/email-report')
+    return response.data
+  },
 }
