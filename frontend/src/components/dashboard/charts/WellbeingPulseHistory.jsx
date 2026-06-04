@@ -52,7 +52,7 @@ export default function WellbeingPulseHistory({ sessions }) {
         .map(s => SEV_MAP[s.final_severity])
         .filter(v => v !== undefined)
         
-      let severityTrendScore = 50
+      let severityTrendScore = 0
       if (sevScoresList.length >= 2) {
         const recent = sevScoresList.slice(-Math.min(3, sevScoresList.length))
         const older = sevScoresList.slice(0, Math.max(1, sevScoresList.length - 3))
@@ -75,12 +75,15 @@ export default function WellbeingPulseHistory({ sessions }) {
       const emotionDiversity = Math.min(100, uniqueEmotions.size * 20)
       
       // Composite Pulse Score
-      const pulseScore = Math.min(100, Math.max(0, Math.round(
-        severityTrendScore * 0.35 +
-        engagementScore * 0.20 +
-        completionRate * 0.25 +
-        emotionDiversity * 0.20
-      )))
+      let pulseScore = 0
+      if (concludedCount > 0) {
+        pulseScore = Math.min(100, Math.max(0, Math.round(
+          severityTrendScore * 0.35 +
+          engagementScore * 0.20 +
+          completionRate * 0.25 +
+          emotionDiversity * 0.20
+        )))
+      }
       
       history.push({
         week: weekKey.replace(/^\d{4}-/, ''), // e.g. "W20"

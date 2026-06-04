@@ -136,7 +136,7 @@ def calculate_pulse_history(sessions: list) -> list[dict]:
             if sev and sev.lower() in SEV_MAP:
                 sev_scores.append(SEV_MAP[sev.lower()])
 
-        severity_trend_score = 50
+        severity_trend_score = 0
         if len(sev_scores) >= 2:
             recent = sev_scores[-min(3, len(sev_scores)):]
             older = sev_scores[:max(1, len(sev_scores) - 3)]
@@ -158,12 +158,15 @@ def calculate_pulse_history(sessions: list) -> list[dict]:
                 unique_emotions.add(cat)
         emotion_diversity = min(100, len(unique_emotions) * 20)
 
-        pulse_score = int(
-            severity_trend_score * 0.35 +
-            engagement_score * 0.20 +
-            completion_rate * 0.25 +
-            emotion_diversity * 0.20
-        )
+        if concluded_count == 0:
+            pulse_score = 0
+        else:
+            pulse_score = int(
+                severity_trend_score * 0.35 +
+                engagement_score * 0.20 +
+                completion_rate * 0.25 +
+                emotion_diversity * 0.20
+            )
         pulse_score = min(100, max(0, pulse_score))
 
         history.append({

@@ -1064,7 +1064,7 @@ async def api_dashboard_analytics(request: Request, db: AsyncSession = Depends(g
         severity_trend_score = max(0, min(100, int(100 - (sev_scores_list[0] / 3) * 100 + 33)))
         trend = "stable"
     else:
-        severity_trend_score = 50
+        severity_trend_score = 0
         trend = "neutral"
 
     # Engagement consistency
@@ -1083,12 +1083,15 @@ async def api_dashboard_analytics(request: Request, db: AsyncSession = Depends(g
             all_emotions.add(p.get("primary_emotion", "Neutral"))
     emotion_diversity = min(100, len(all_emotions) * 20)
 
-    pulse_score = int(
-        severity_trend_score * 0.35 +
-        engagement_score * 0.20 +
-        completion_rate * 0.25 +
-        emotion_diversity * 0.20
-    )
+    if concluded_count == 0:
+        pulse_score = 0
+    else:
+        pulse_score = int(
+            severity_trend_score * 0.35 +
+            engagement_score * 0.20 +
+            completion_rate * 0.25 +
+            emotion_diversity * 0.20
+        )
 
     wellbeing_pulse = {
         "score": min(100, max(0, pulse_score)),
@@ -1312,7 +1315,7 @@ async def api_email_report(request: Request, db: AsyncSession = Depends(get_db))
         severity_trend_score = max(0, min(100, int(100 - (sev_scores_list[0] / 3) * 100 + 33)))
         trend = "stable"
     else:
-        severity_trend_score = 50
+        severity_trend_score = 0
         trend = "neutral"
 
     # Engagement consistency
@@ -1331,12 +1334,15 @@ async def api_email_report(request: Request, db: AsyncSession = Depends(get_db))
             all_emotions.add(p.get("primary_emotion", "Neutral"))
     emotion_diversity = min(100, len(all_emotions) * 20)
 
-    pulse_score = int(
-        severity_trend_score * 0.35 +
-        engagement_score * 0.20 +
-        completion_rate * 0.25 +
-        emotion_diversity * 0.20
-    )
+    if concluded_count == 0:
+        pulse_score = 0
+    else:
+        pulse_score = int(
+            severity_trend_score * 0.35 +
+            engagement_score * 0.20 +
+            completion_rate * 0.25 +
+            emotion_diversity * 0.20
+        )
     pulse_score = min(100, max(0, pulse_score))
 
     # ── Severity breakdown ──────────────────────────────────────────────────

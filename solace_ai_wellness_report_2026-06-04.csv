@@ -1,0 +1,5 @@
+Date,Session Title,Primary Emotion,Severity,Emotions Detected,Triggers,Depth Score,Status
+2026-06-03 09:54:00,......,Neutral,low,"Anger, Disappointment, Gratitude, Neutral",,32,Completed
+2026-06-03 09:56:01,I am feeling okay,Hopefulness,high,"Anxiety, Curiosity, Disappointment, Gratitude, Guilt, Hopefulness, Joy, Love, Sadness, Surprise","kaam haru bhaye, padai nai gareko",59,Completed
+2026-06-03 10:00:16,i watched the lucifer valentine movies,Surprise,high,"Anger, Anxiety, Confusion, Curiosity, Disappointment, Guilt, Joy, Neutral, Sadness, Surprise","Lucifer Valentine movie, murder scene",60,Completed
+2026-06-04 18:46:42,"Its about my bedtime, everything is okay but ...",Confusion,low,"Confusion, Curiosity, Disappointment, Gratitude, Hopefulness, Joy, Surprise","thoughts at bedtime, upcoming internship, vibecoding",70,Completed
