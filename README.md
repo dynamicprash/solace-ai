@@ -1,4 +1,4 @@
-# 🌿 Solace-AI — AI-Powered Emotion Analytics & Mental Wellness Companion
+# 🌿 Solace — AI-Powered Emotion Analytics & Mental Wellness Companion
 
 > *Your safe space to be heard, understood, and supported.*
 
@@ -238,4 +238,4 @@ If you or someone you know is in distress, please contact professional support:
 - 🇳🇵 **TPO Nepal Toll-Free line**: Call **1660-01-02005**
 - 🌐 **International Resources**: Find local hotlines at [IASP Crisis Centres](https://www.iasp.info/resources/Crisis_Centres/)
 
-> ⚠️ **Disclaimer**: Solace-AI is a mental wellness monitoring and support tool designed to encourage reflection. It is **not** a clinical tool or a replacement for professional therapy, counseling, or psychiatric services.
+> ⚠️ **Disclaimer**: Solace is a mental wellness monitoring and support tool designed to encourage reflection. It is **not** a clinical tool or a replacement for professional therapy, counseling, or psychiatric services.

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Download, Mail, Calendar, CheckCircle2, AlertCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { chatService } from '../../services/chat'
 import { useAuthStore } from '../../store/authStore'
@@ -178,7 +179,13 @@ export default function DashboardPage() {
             ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
             : 'bg-rose-50 border-rose-200 text-rose-800'
         }`}>
-          <span>{toast.type === 'success' ? '✅' : '❌'}</span>
+          <span className="flex items-center">
+            {toast.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-rose-600" />
+            )}
+          </span>
           <span>{toast.message}</span>
         </div>
       )}
@@ -208,7 +215,9 @@ export default function DashboardPage() {
             >
               {exporting ? (
                 <span className="inline-block animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-sage-600 animate-spin" />
-              ) : '📥'}
+              ) : (
+                <Download className="w-4 h-4 text-sage-600" />
+              )}
               <span>Export CSV</span>
             </button>
             <button
@@ -218,7 +227,9 @@ export default function DashboardPage() {
             >
               {emailing ? (
                 <span className="inline-block animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-sage-600 animate-spin" />
-              ) : '✉️'}
+              ) : (
+                <Mail className="w-4 h-4 text-sage-600" />
+              )}
               <span>Email Report</span>
             </button>
             <button
@@ -336,7 +347,15 @@ export default function DashboardPage() {
 
                 {/* Weekly + Severity distribution */}
                 <div className="grid gap-6 lg:grid-cols-2">
-                  <ChartCard title="📅 Weekly Chats" subtitle="Sessions per day this week">
+                  <ChartCard 
+                    title={
+                      <span className="flex items-center gap-1.5">
+                        <Calendar className="w-4.5 h-4.5 text-sage-600" />
+                        <span>Weekly Chats</span>
+                      </span>
+                    } 
+                    subtitle="Sessions per day this week"
+                  >
                     <div className="space-y-3">
                       {weekly.map((item) => (
                         <div key={item.day} className="flex items-center justify-between gap-3">

@@ -478,7 +478,7 @@ async def api_unsubscribe(email: str, token: str, db: AsyncSession = Depends(get
             <div style="max-width: 500px; margin: 0 auto; padding: 40px; background-color: #fdfcf9; border: 1px solid #e4e0d8; border-radius: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
                 <span style="font-size: 48px;">🌿</span>
                 <h1 style="color: #2e5133; margin-top: 20px;">Successfully Unsubscribed</h1>
-                <p style="color: #4a4238; line-height: 1.6; margin-top: 15px;">You have been unsubscribed from all Solace-AI email notifications.</p>
+                <p style="color: #4a4238; line-height: 1.6; margin-top: 15px;">You have been unsubscribed from all Solace email notifications.</p>
                 <p style="color: #786e5c; font-size: 14px; margin-top: 25px;">You can close this window or return to the application.</p>
             </div>
         </div>
@@ -793,7 +793,7 @@ async def api_end_session(request: Request, db: AsyncSession = Depends(get_db)):
         final_message = "Session concluded. Thank you for sharing."
     else:
         system_content = (
-            "You are Solace-AI. The user has chosen to end the session. "
+            "You are Solace. The user has chosen to end the session. "
             "Provide a compassionate, validating closing summary of what was discussed. "
             "Keep it under 4 sentences. Do NOT ask any follow-up questions."
         )

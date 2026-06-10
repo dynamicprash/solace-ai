@@ -23,16 +23,16 @@ async def generate_weekly_insights(display_name: str, session_count: int, emotio
 
     if session_count == 0:
         prompt = (
-            f"You are Solace-AI, a compassionate mental health companion. "
+            f"You are Solace, a compassionate mental health companion. "
             f"Write a gentle, warm, and supportive note to {display_name} who hasn't logged any chat sessions "
-            f"on Solace-AI this week. Encourage them gently to check in on their feelings when they are ready. "
+            f"on Solace this week. Encourage them gently to check in on their feelings when they are ready. "
             f"Keep it under 3-4 sentences. Do not mention technical details. Use a warm, caring tone."
         )
     else:
         emotions_list = [f"{emotion} ({count} time{'s' if count > 1 else ''})" for emotion, count in emotion_counts.items()]
         emotions_str = ", ".join(emotions_list)
         prompt = (
-            f"You are Solace-AI, a compassionate mental health companion. "
+            f"You are Solace, a compassionate mental health companion. "
             f"Write a personalized, gentle weekly reflection for {display_name}. "
             f"This week, they completed {session_count} check-in sessions. "
             f"The emotions detected were: {emotions_str}. "

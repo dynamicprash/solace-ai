@@ -317,7 +317,7 @@ def save_training_report(history: dict, emo_classes: list,
              color="white", fontsize=10, va="top", fontfamily="monospace",
              bbox=dict(facecolor="#0f3460", edgecolor="#e94560", boxstyle="round,pad=0.5"))
 
-    fig.suptitle("Solace-AI — BERT + BiLSTM + Attention Training Report (Multi-Label)",
+    fig.suptitle("Solace — BERT + BiLSTM + Attention Training Report (Multi-Label)",
                  color="white", fontsize=14, fontweight="bold", y=1.01)
     plt.tight_layout()
     plt.savefig(REPORT_PATH, dpi=130, bbox_inches="tight",

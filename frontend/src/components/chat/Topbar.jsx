@@ -1,3 +1,4 @@
+import { Menu } from 'lucide-react'
 import EmotionBadge from './EmotionBadge'
 
 export default function Topbar({
@@ -19,7 +20,7 @@ export default function Topbar({
         className="w-9 h-9 bg-stone-100 border border-stone-200 rounded-lg text-sm cursor-pointer flex items-center justify-center flex-shrink-0 hover:bg-stone-200 transition-colors"
         title="Toggle sidebar"
       >
-        ☰
+        <Menu className="w-5 h-5 text-stone-700" />
       </button>
 
       {/* Center Area - Title or empty */}

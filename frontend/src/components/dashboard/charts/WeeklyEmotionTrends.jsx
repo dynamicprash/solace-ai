@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Lightbulb } from 'lucide-react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts'
@@ -69,8 +70,9 @@ export default function WeeklyEmotionTrends({ data }) {
 
   return (
     <div className="w-full">
-      <div className="text-xs text-sage-500 mb-3 text-center italic">
-        💡 Click on an emotion in the legend to show/hide its line
+      <div className="text-xs text-sage-500 mb-3 text-center italic flex items-center justify-center gap-1.5">
+        <Lightbulb className="w-3.5 h-3.5 text-sage-500" />
+        <span>Click on an emotion in the legend to show/hide its line</span>
       </div>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={chartData} margin={{ top: 10, right: 20, left: -20, bottom: 5 }}>

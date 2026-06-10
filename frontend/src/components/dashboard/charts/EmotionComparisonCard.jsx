@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { Sparkles, Scale } from 'lucide-react'
 
 const POSITIVE_EMOTIONS = ['joy', 'love', 'relief', 'pride', 'calm', 'hopeful', 'grateful', 'happy']
 const NEGATIVE_EMOTIONS = ['anxiety', 'sadness', 'anger', 'guilt', 'grief', 'fear', 'shame', 'depression', 'self-harm', 'hopeless', 'lonely', 'scared', 'overwhelmed', 'frustrated', 'worried', 'numb', 'exhausted']
@@ -55,22 +56,24 @@ export default function EmotionComparisonCard({ data }) {
 
   if (!data || data.length < 2) {
     return (
-      <div className="flex items-center justify-center p-6 text-sage-400 text-sm italic bg-sage-50/50 rounded-2xl border border-sage-100">
-        ✨ Weekly emotional comparison will appear here once you have at least 2 weeks of activity.
+      <div className="flex items-center justify-center gap-2 p-6 text-sage-400 text-sm italic bg-sage-50/50 rounded-2xl border border-sage-100">
+        <Sparkles className="w-4 h-4 text-sage-400" />
+        <span>Weekly emotional comparison will appear here once you have at least 2 weeks of activity.</span>
       </div>
     )
   }
 
   if (!comparisons || comparisons.length === 0) {
     return (
-      <div className="flex items-center justify-center p-6 text-sage-500 text-sm bg-sage-50/50 rounded-2xl border border-sage-100">
-        ⚖️ Your emotional distribution is identical to last week. Stable wellness!
+      <div className="flex items-center justify-center gap-2 p-6 text-sage-500 text-sm bg-sage-50/50 rounded-2xl border border-sage-100">
+        <Scale className="w-4 h-4 text-sage-500" />
+        <span>Your emotional distribution is identical to last week. Stable wellness!</span>
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 w-full">
       {comparisons.slice(0, 6).map((item) => {
         const isIncrease = item.diff > 0
         const sign = isIncrease ? '+' : ''
@@ -95,15 +98,15 @@ export default function EmotionComparisonCard({ data }) {
         return (
           <div
             key={item.name}
-            className={`flex items-center justify-between p-3.5 rounded-xl border transition-all duration-200 hover:shadow-sm ${borderClass}`}
+            className={`flex items-center justify-between p-3.5 rounded-xl border transition-all duration-200 hover:shadow-sm gap-2 ${borderClass}`}
           >
-            <div>
-              <h4 className="text-sm font-semibold text-sage-800">{item.name}</h4>
-              <p className="text-xs text-sage-400 mt-0.5">
+            <div className="min-w-0">
+              <h4 className="text-sm font-semibold text-sage-800 truncate">{item.name}</h4>
+              <p className="text-xs text-sage-400 mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">
                 Last week: {item.prevCount} • This week: {item.currentCount}
               </p>
             </div>
-            <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${badgeClass}`}>
+            <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold flex-shrink-0 ${badgeClass}`}>
               <span>{arrow}</span>
               <span>{sign}{item.diff}</span>
             </div>

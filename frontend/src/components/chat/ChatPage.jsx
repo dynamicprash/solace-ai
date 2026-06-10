@@ -132,17 +132,51 @@ export default function ChatPage() {
       setIsLoading(true)
       const response = await chatService.getSession(sessionId)
       const sessionHistory = response.history || []
-      useChatStore.setState({
-        currentSessionId: sessionId,
-        messages: sessionHistory,
-        predictions: response.predictions || [],
-        isStreaming: false,
-        questionCount: response.question_count || 0,
-        currentAnalysis: response.final_emotion ? {
+      const preds = response.predictions || []
+
+      // Build emotion summary from all predictions (same as live session)
+      let derivedAnalysis = null
+      if (preds.length > 0) {
+        // Collect all unique emotions across all predictions
+        const emotionCountMap = {}
+        const emotionConfMap = {}
+        preds.forEach((p) => {
+          ;(p.emotions || []).forEach((emo) => {
+            emotionCountMap[emo] = (emotionCountMap[emo] || 0) + 1
+          })
+          const primary = p.primary_emotion
+          if (primary) {
+            if (!emotionConfMap[primary] || p.emo_conf > emotionConfMap[primary]) {
+              emotionConfMap[primary] = p.emo_conf || 0
+            }
+          }
+        })
+        // Sort by frequency
+        const sortedEmotions = Object.entries(emotionCountMap)
+          .sort((a, b) => b[1] - a[1])
+          .map(([emo]) => emo)
+
+        const lastPred = preds[preds.length - 1]
+        derivedAnalysis = {
+          emotions: sortedEmotions,
+          primaryEmotion: lastPred.primary_emotion || sortedEmotions[0] || response.final_emotion,
+          confidences: emotionConfMap,
+        }
+      } else if (response.final_emotion) {
+        derivedAnalysis = {
           emotions: [response.final_emotion],
           primaryEmotion: response.final_emotion,
           confidences: {},
-        } : null,
+        }
+      }
+
+      useChatStore.setState({
+        currentSessionId: sessionId,
+        messages: sessionHistory,
+        predictions: preds,
+        isStreaming: false,
+        questionCount: response.question_count || 0,
+        currentAnalysis: derivedAnalysis,
         isConcluded: response.concluded || false,
       })
       setHasStarted(true)

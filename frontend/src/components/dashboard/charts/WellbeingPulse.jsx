@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react'
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  ArrowRight, 
+  HelpCircle, 
+  Flame, 
+  CheckSquare, 
+  Palette 
+} from 'lucide-react'
 
 const COLORS = {
   improving: '#22c55e',
   stable: '#eab308',
   declining: '#ef4444',
   neutral: '#94a3b8',
-}
-
-const TREND_LABELS = {
-  improving: '↗ Improving',
-  stable: '→ Stable',
-  declining: '↘ Declining',
-  neutral: '— Not enough data',
 }
 
 export default function WellbeingPulse({ data }) {
@@ -47,10 +49,10 @@ export default function WellbeingPulse({ data }) {
   const color = COLORS[trend] || COLORS.neutral
 
   const breakdownItems = [
-    { label: 'Severity Trend', value: breakdown.severity_trend ?? 0, icon: '📉' },
-    { label: 'Engagement', value: breakdown.engagement ?? 0, icon: '🔥' },
-    { label: 'Completion', value: breakdown.completion_rate ?? 0, icon: '✅' },
-    { label: 'Emotion Range', value: breakdown.emotional_diversity ?? 0, icon: '🌈' },
+    { label: 'Severity Trend', value: breakdown.severity_trend ?? 0, icon: <TrendingDown className="w-4 h-4 text-sage-600 inline-block mr-1.5 align-text-bottom" /> },
+    { label: 'Engagement', value: breakdown.engagement ?? 0, icon: <Flame className="w-4 h-4 text-sage-600 inline-block mr-1.5 align-text-bottom" /> },
+    { label: 'Completion', value: breakdown.completion_rate ?? 0, icon: <CheckSquare className="w-4 h-4 text-sage-600 inline-block mr-1.5 align-text-bottom" /> },
+    { label: 'Emotion Range', value: breakdown.emotional_diversity ?? 0, icon: <Palette className="w-4 h-4 text-sage-600 inline-block mr-1.5 align-text-bottom" /> },
   ]
 
   return (
@@ -90,10 +92,16 @@ export default function WellbeingPulse({ data }) {
 
       {/* Trend badge */}
       <div
-        className="px-4 py-1.5 rounded-full text-sm font-medium text-white"
+        className="px-4 py-1.5 rounded-full text-sm font-medium text-white flex items-center gap-1.5"
         style={{ backgroundColor: color }}
       >
-        {TREND_LABELS[trend]}
+        {trend === 'improving' && <TrendingUp className="w-4 h-4" />}
+        {trend === 'stable' && <ArrowRight className="w-4 h-4" />}
+        {trend === 'declining' && <TrendingDown className="w-4 h-4" />}
+        {trend === 'neutral' && <HelpCircle className="w-4 h-4" />}
+        <span>
+          {trend === 'improving' ? 'Improving' : trend === 'stable' ? 'Stable' : trend === 'declining' ? 'Declining' : 'Not enough data'}
+        </span>
       </div>
 
       {/* Breakdown bars */}
@@ -101,8 +109,9 @@ export default function WellbeingPulse({ data }) {
         {breakdownItems.map((item) => (
           <div key={item.label}>
             <div className="flex items-center justify-between text-sm mb-1">
-              <span className="text-sage-600">
-                {item.icon} {item.label}
+              <span className="text-sage-600 flex items-center">
+                {item.icon}
+                <span>{item.label}</span>
               </span>
               <span className="font-medium text-sage-900">{item.value}%</span>
             </div>

@@ -1,10 +1,12 @@
+import { AlertTriangle, Pin, Check } from 'lucide-react'
+
 export default function SeverityBadge({ severity, category, confidence, visible = false }) {
   if (!visible || !severity) return null
 
   const severityConfig = {
-    high: { color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-600/30', progress: 'bg-red-600', icon: '⚠️', label: 'HIGH' },
-    medium: { color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-600/30', progress: 'bg-orange-600', icon: '📌', label: 'MEDIUM' },
-    low: { color: 'text-sage-600', bg: 'bg-green-50', border: 'border-sage-600/30', progress: 'bg-sage-600', icon: '✓', label: 'LOW' },
+    high: { color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-600/30', progress: 'bg-red-600', icon: <AlertTriangle className="w-5 h-5 text-red-600" />, label: 'HIGH' },
+    medium: { color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-600/30', progress: 'bg-orange-600', icon: <Pin className="w-5 h-5 text-orange-600" />, label: 'MEDIUM' },
+    low: { color: 'text-sage-600', bg: 'bg-green-50', border: 'border-sage-600/30', progress: 'bg-sage-600', icon: <Check className="w-5 h-5 text-sage-600" />, label: 'LOW' },
   }
 
   const config = severityConfig[severity] || severityConfig.low
@@ -12,7 +14,7 @@ export default function SeverityBadge({ severity, category, confidence, visible 
   return (
     <div className={`${config.bg} border-2 ${config.border} rounded-2xl p-2.5 px-3.5 block animate-fadeIn`}>
       <div className="flex items-center gap-2 mb-2">
-        <div className="text-lg">{config.icon}</div>
+        <div className="flex items-center justify-center">{config.icon}</div>
         <div className="flex-1">
           <div className="text-sm font-medium text-stone-800">
             {category || 'Emotional Support Needed'}

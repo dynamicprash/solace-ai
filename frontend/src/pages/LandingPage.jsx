@@ -7,7 +7,7 @@ import {
 import {
   Clock, BarChart3, ShieldCheck, ChevronDown,
   TrendingUp, Sparkles,
-  Globe, ExternalLink, Send, Menu, X,
+  Globe, ExternalLink, Send, Menu, X, Check,
 } from 'lucide-react'
 
 /* ─── Mock data for the mini "Weekly Progress" chart ─── */
@@ -274,7 +274,7 @@ export default function LandingPage() {
                   'Public journaling for community support',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-stone-600">
-                    <span className="mt-0.5 text-sage-500 flex-shrink-0">✓</span>
+                    <Check className="mt-0.5 w-4 h-4 text-sage-500 flex-shrink-0" />
                     <span>{item}</span>
                   </li>
                 ))}

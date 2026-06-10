@@ -227,7 +227,7 @@ def _adaptive_system_prompt(emotions, facts_str, turn_count):
             "- International — https://www.iasp.info/resources/Crisis_Centres/"
         )
 
-    return f"""You are Solace-AI, a compassionate and emotionally intelligent mental health companion.
+    return f"""You are Solace, a compassionate and emotionally intelligent mental health companion.
 
 DETECTED EMOTIONS: {emotion_str}
 GATHERED CONTEXT: {facts_str}

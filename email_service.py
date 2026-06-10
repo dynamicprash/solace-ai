@@ -7,7 +7,7 @@ import resend
 resend.api_key = os.environ.get("RESEND_API_KEY")
 SECRET_KEY = os.environ.get("SECRET_KEY", "change-this-to-a-long-random-string")
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:8000")
-SENDER = "Solace-AI <onboarding@resend.dev>"
+SENDER = "Solace <onboarding@resend.dev>"
 
 def get_unsubscribe_link(email: str) -> str:
     """Generate a secure, stateless unsubscribe link using HMAC."""
@@ -20,13 +20,13 @@ def send_verification_email(to_email: str, code: str) -> None:
     <div style="font-family: 'DM Sans', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background-color: #fdfcf9; border: 1px solid #e4e0d8; border-radius: 24px;">
         <div style="text-align: center; margin-bottom: 24px;">
             <span style="font-size: 48px;">🌿</span>
-            <h1 style="color: #2e5133; margin: 10px 0 0 0; font-size: 28px;">Solace-AI</h1>
+            <h1 style="color: #2e5133; margin: 10px 0 0 0; font-size: 28px;">Solace</h1>
             <p style="color: #786e5c; font-style: italic; margin: 4px 0 0 0; font-size: 14px;">Your safe space to be heard</p>
         </div>
         <hr style="border: 0; border-top: 1px solid #e4e0d8; margin: 24px 0;" />
         <div style="color: #4a4238; font-size: 16px; line-height: 1.6;">
             <p>Hello,</p>
-            <p>Thank you for creating an account with Solace-AI. To complete your registration, please verify your email address using the 6-digit verification code below:</p>
+            <p>Thank you for creating an account with Solace. To complete your registration, please verify your email address using the 6-digit verification code below:</p>
             <div style="text-align: center; margin: 30px 0;">
                 <span style="font-family: monospace; font-size: 36px; font-weight: bold; letter-spacing: 6px; color: #2e5133; padding: 10px 20px; background-color: #f2f0ec; border-radius: 12px; border: 1px solid #cdc8bc;">{code}</span>
             </div>
@@ -37,7 +37,7 @@ def send_verification_email(to_email: str, code: str) -> None:
     resend.Emails.send({
         "from": SENDER,
         "to": to_email,
-        "subject": "Verify your email - Solace-AI",
+        "subject": "Verify your email - Solace",
         "html": html_content
     })
 
@@ -48,23 +48,23 @@ def send_inactivity_reminder(to_email: str, display_name: str) -> None:
     <div style="font-family: 'DM Sans', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background-color: #fdfcf9; border: 1px solid #e4e0d8; border-radius: 24px;">
         <div style="text-align: center; margin-bottom: 24px;">
             <span style="font-size: 48px;">🌿</span>
-            <h1 style="color: #2e5133; margin: 10px 0 0 0; font-size: 28px;">Solace-AI</h1>
+            <h1 style="color: #2e5133; margin: 10px 0 0 0; font-size: 28px;">Solace</h1>
             <p style="color: #786e5c; font-style: italic; margin: 4px 0 0 0; font-size: 14px;">Your safe space to be heard</p>
         </div>
         <hr style="border: 0; border-top: 1px solid #e4e0d8; margin: 24px 0;" />
         <div style="color: #4a4238; font-size: 16px; line-height: 1.6;">
             <p>Hi {display_name},</p>
             <p>We've been thinking of you. 💙</p>
-            <p>We noticed you haven't checked in with Solace-AI in the past day. Remember, taking a few minutes to check in on how you're feeling can make a big difference.</p>
+            <p>We noticed you haven't checked in with Solace in the past day. Remember, taking a few minutes to check in on how you're feeling can make a big difference.</p>
             <p>Whenever you're ready, we're here to listen and support you.</p>
             <div style="text-align: center; margin: 30px 0;">
                 <a href="{BASE_URL}/chat" style="display: inline-block; padding: 12px 30px; background-color: #2e5133; color: white; text-decoration: none; font-weight: 500; border-radius: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">Check in now</a>
             </div>
-            <p style="font-size: 14px; color: #786e5c;">Take care,<br />The Solace-AI Team</p>
+            <p style="font-size: 14px; color: #786e5c;">Take care,<br />The Solace Team</p>
         </div>
         <hr style="border: 0; border-top: 1px solid #e4e0d8; margin: 24px 0;" />
         <div style="text-align: center; font-size: 12px; color: #958c7a;">
-            <p>You received this because you opted into Solace-AI check-ins.</p>
+            <p>You received this because you opted into Solace check-ins.</p>
             <p><a href="{unsub_link}" style="color: #6a9e69; text-decoration: underline;">Unsubscribe from email notifications</a></p>
         </div>
     </div>
@@ -72,7 +72,7 @@ def send_inactivity_reminder(to_email: str, display_name: str) -> None:
     resend.Emails.send({
         "from": SENDER,
         "to": to_email,
-        "subject": "Thinking of you - Solace-AI check-in",
+        "subject": "Thinking of you - Solace check-in",
         "html": html_content
     })
 
@@ -529,7 +529,7 @@ def _render_wellness_report_html(
 
             <div style="color: #4A453E; font-size: 15px; line-height: 1.6; font-family: sans-serif;">
                 <p style="margin-top: 0; margin-bottom: 20px;">Hi <strong>{display_name}</strong>,</p>
-                <p style="margin-bottom: 24px;">Here is your Solace-AI wellness recap, detailing your emotional check-ins, analytics, and personalized guidance.</p>
+                <p style="margin-bottom: 24px;">Here is your Solace wellness recap, detailing your emotional check-ins, analytics, and personalized guidance.</p>
                 
                 <!-- Pulse Hero Card -->
                 <div style="background-color: #F6F5F2; border: 1px solid #E6E3DD; border-radius: 20px; padding: 24px; text-align: center; margin: 24px 0;">
@@ -595,13 +595,13 @@ def _render_wellness_report_html(
             <!-- Footer Signature -->
             <div style="margin-top: 36px; padding-top: 24px; border-top: 1px solid #E6E3DD; color: #7A746B; font-size: 14px; font-family: sans-serif;">
                 Warmly,<br />
-                <strong>The Solace-AI Team</strong>
+                <strong>The Solace Team</strong>
             </div>
         </div>
 
         <!-- Unsubscribe Footer -->
         <div style="text-align: center; margin-top: 30px; font-size: 11px; color: #8F897E; line-height: 1.5; max-width: 600px; margin-left: auto; margin-right: auto; padding: 0 10px; font-family: sans-serif;">
-            <p>You received this because you opted into Solace-AI weekly reports.</p>
+            <p>You received this because you opted into Solace weekly reports.</p>
             <p><a href="{unsub_link}" target="_blank" style="color: #4D8050; text-decoration: underline; font-weight: 600;">Unsubscribe from email notifications</a></p>
         </div>
     </div>
@@ -625,7 +625,7 @@ def send_weekly_report(
     html_content = _render_wellness_report_html(
         display_name=display_name,
         title="Weekly Reflection",
-        subtitle="Your Solace-AI emotional recap",
+        subtitle="Your Solace emotional recap",
         pulse_score=pulse_score,
         pulse_trend=pulse_trend,
         session_count=session_count,
@@ -639,7 +639,7 @@ def send_weekly_report(
     resend.Emails.send({
         "from": SENDER,
         "to": to_email,
-        "subject": "Your Solace-AI Weekly Reflection",
+        "subject": "Your Solace Weekly Reflection",
         "html": html_content
     })
 
@@ -675,6 +675,6 @@ def send_analytics_report(
     resend.Emails.send({
         "from": SENDER,
         "to": to_email,
-        "subject": "Your Solace-AI Wellness Analytics Report",
+        "subject": "Your Solace Wellness Analytics Report",
         "html": html_content
     })

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Plus, Trash2, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useChatStore } from '../../store/chatStore'
 import { useAuthStore } from '../../store/authStore'
@@ -58,7 +59,7 @@ export default function Sidebar({ isOpen, onNewChat, onSelectSession, onLogout, 
         <div className="flex items-center gap-2">
           <span className="text-xl">🌿</span>
           <span className="font-display text-xl text-sage-200 font-medium">
-            Solace-AI
+            Solace
           </span>
         </div>
       </div>
@@ -66,11 +67,11 @@ export default function Sidebar({ isOpen, onNewChat, onSelectSession, onLogout, 
       <div className="mx-3.5 my-3.5 space-y-3">
         <button
           onClick={handleNewChat}
-          className="w-full p-3 bg-emerald-600 text-white rounded-xl text-sm font-body font-medium cursor-pointer flex items-center gap-2 hover:bg-emerald-700 transition-all border border-emerald-600"
+          className="w-full p-3 bg-emerald-600 text-white rounded-xl text-sm font-body font-medium cursor-pointer flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all border border-emerald-600"
           style={{ backgroundColor: '#2f7a4e' }}
         >
-          <span className="text-base">+</span>
-          New Chat
+          <Plus className="w-4.5 h-4.5" />
+          <span>New Chat</span>
         </button>
         <button
           onClick={() => onNavigate ? onNavigate('/dashboard') : navigate('/dashboard')}
@@ -114,11 +115,11 @@ export default function Sidebar({ isOpen, onNewChat, onSelectSession, onLogout, 
                       <span className={`w-2.5 h-2.5 rounded-full ${severityClass(severity)}`} />
                       <button
                         onClick={(e) => handleDeleteSession(session.session_id, e)}
-                        className={`bg-none border-none text-white/20 cursor-pointer text-base p-0 rounded hover:text-red-300/70 transition-colors ${currentSessionId === session.session_id ? 'block' : 'hidden group-hover:block'
+                        className={`bg-none border-none text-white/25 cursor-pointer rounded hover:text-red-300 transition-colors p-0.5 flex items-center justify-center ${currentSessionId === session.session_id ? 'block' : 'hidden group-hover:block'
                           }`}
                         title="Delete chat"
                       >
-                        ×
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
@@ -147,10 +148,10 @@ export default function Sidebar({ isOpen, onNewChat, onSelectSession, onLogout, 
         </div>
         <button
           onClick={handleLogout}
-          className="bg-none border-none text-white/30 text-lg cursor-pointer p-1 rounded-lg hover:bg-white/8 hover:text-white/60 transition-all"
+          className="bg-none border-none text-white/30 cursor-pointer p-1.5 rounded-lg hover:bg-white/10 hover:text-white/70 transition-all flex items-center justify-center"
           title="Logout"
         >
-          ⎋
+          <LogOut className="w-4.5 h-4.5" />
         </button>
       </div>
     </div>

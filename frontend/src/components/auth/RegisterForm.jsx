@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Check, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import { authService } from '../../services/auth'
@@ -43,13 +44,19 @@ function PasswordStrength({ password }) {
       </p>
 
       {/* Individual rules */}
-      <ul className="space-y-0.5">
+      <ul className="space-y-1 mt-2">
         {passwordRules.map((rule, idx) => (
           <li
             key={idx}
-            className={`text-xs font-body flex items-center gap-1.5 transition-colors ${rule.test(password) ? 'text-emerald-600' : 'text-stone-400'}`}
+            className={`text-xs font-body flex items-center gap-2 transition-colors ${rule.test(password) ? 'text-emerald-600' : 'text-stone-400'}`}
           >
-            <span className="text-xs">{rule.test(password) ? '✓' : '○'}</span>
+            <span className="flex-shrink-0 flex items-center justify-center w-3.5 h-3.5">
+              {rule.test(password) ? (
+                <Check className="w-3.5 h-3.5 text-emerald-600" />
+              ) : (
+                <div className="w-2 h-2 rounded-full border border-stone-300" />
+              )}
+            </span>
             {rule.label}
           </li>
         ))}
@@ -179,9 +186,15 @@ export default function RegisterForm() {
     usernameStatus === 'checking' ? (
       <span className="text-xs text-stone-400 font-body">Checking...</span>
     ) : usernameStatus === 'available' ? (
-      <span className="text-xs text-emerald-600 font-body">✓ Username is available</span>
+      <span className="text-xs text-emerald-600 font-body flex items-center gap-1.25">
+        <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+        <span>Username is available</span>
+      </span>
     ) : usernameStatus === 'taken' ? (
-      <span className="text-xs text-red-500 font-body">✗ Username is taken</span>
+      <span className="text-xs text-red-500 font-body flex items-center gap-1.25">
+        <X className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
+        <span>Username is taken</span>
+      </span>
     ) : null
 
   return (

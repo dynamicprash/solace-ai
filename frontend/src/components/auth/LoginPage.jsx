@@ -48,7 +48,7 @@ export default function LoginPage({ mode: initialMode = 'login' }) {
         <div className="text-center mb-9">
           <div className="text-5xl mb-2.5">🌿</div>
           <h1 className="font-display font-bold text-sage-700 text-2xl tracking-tight mb-1.5">
-            Solace-AI
+            Solace
           </h1>
           <p className="text-stone-500 italic text-sm">
             Your safe space to be heard
@@ -60,8 +60,8 @@ export default function LoginPage({ mode: initialMode = 'login' }) {
           <button
             onClick={() => handleTabSwitch('login')}
             className={`flex-1 py-2.5 px-4 rounded font-body font-medium transition-all text-sm ${isLogin
-                ? 'bg-white text-sage-700 shadow-tab'
-                : 'bg-transparent text-stone-500 hover:text-sage-700'
+              ? 'bg-white text-sage-700 shadow-tab'
+              : 'bg-transparent text-stone-500 hover:text-sage-700'
               }`}
           >
             Sign In
@@ -69,8 +69,8 @@ export default function LoginPage({ mode: initialMode = 'login' }) {
           <button
             onClick={() => handleTabSwitch('register')}
             className={`flex-1 py-2.5 px-4 rounded font-body font-medium transition-all text-sm ${!isLogin
-                ? 'bg-white text-sage-700 shadow-tab'
-                : 'bg-transparent text-stone-500 hover:text-sage-700'
+              ? 'bg-white text-sage-700 shadow-tab'
+              : 'bg-transparent text-stone-500 hover:text-sage-700'
               }`}
           >
             Create Account
