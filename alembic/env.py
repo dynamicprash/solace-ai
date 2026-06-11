@@ -1,5 +1,6 @@
 import os
 from logging.config import fileConfig
+from pathlib import Path
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
@@ -9,9 +10,29 @@ import db.models  # noqa: F401 — register ORM mappers
 from db.base import Base
 from db.config import require_database_url, to_sync_url
 
+
+def load_dotenv_file(filename: str = ".env") -> None:
+    path = Path(__file__).resolve().parents[1] / filename
+    if not path.exists():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and os.environ.get(key) is None:
+            os.environ[key] = value
+
+
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+load_dotenv_file()
 
 target_metadata = Base.metadata
 
