@@ -1,13 +1,3 @@
-"""
-predict.py
-===========
-Loads the trained BERT + BiLSTM + Attention model and exposes a
-Predictor class for multi-label emotion detection (15 categories).
-
-Also runnable as a CLI test:
-    python predict.py "I feel so anxious and can't sleep at all"
-"""
-
 import os
 import sys
 import json

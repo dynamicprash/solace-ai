@@ -1,19 +1,3 @@
-"""
-train.py
-=========
-Trains a BERT + Bidirectional LSTM + Attention classifier on the
-GoEmotions dataset (mapped to 15 emotion categories, multi-label).
-
-Run:
-    python generate_dataset.py   (first time)
-    python train.py
-
-Output:
-    saved_models/bert_lstm_model.pt
-    saved_models/model_config.json
-    training_report.png
-"""
-
 import os
 import json
 import pickle

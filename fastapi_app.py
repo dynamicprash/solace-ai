@@ -1,16 +1,3 @@
-"""
-FastAPI application (default server for this project).
-
-Requires DATABASE_URL (postgresql://...).
-
-Run:
-  export DATABASE_URL=postgresql://user:pass@localhost:5432/dbname
-  alembic upgrade head
-  uvicorn app:app --host 0.0.0.0 --port 8000 --reload
-
-Flask legacy: app_flask.py
-"""
-
 from __future__ import annotations
 
 import asyncio

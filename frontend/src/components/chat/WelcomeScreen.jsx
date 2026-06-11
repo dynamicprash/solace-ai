@@ -1,7 +1,9 @@
+import Logo from '../common/Logo'
+
 export default function WelcomeScreen({ userName, onStart }) {
   return (
     <div className="flex flex-col items-center text-center p-12 px-6 animate-fadeUp max-w-md mx-auto">
-      <div className="text-6xl mb-5">🌿</div>
+      <Logo className="w-16 h-16 mb-5" />
 
       <h1 className="font-display text-3xl text-sage-900 mb-3.5 tracking-tight">
         Welcome, {userName}

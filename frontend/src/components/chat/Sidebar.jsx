@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useChatStore } from '../../store/chatStore'
 import { useAuthStore } from '../../store/authStore'
 import { chatService } from '../../services/chat'
+import Logo from '../common/Logo'
 
 export default function Sidebar({ isOpen, onNewChat, onSelectSession, onLogout, onNavigate }) {
   const navigate = useNavigate()
@@ -57,7 +58,7 @@ export default function Sidebar({ isOpen, onNewChat, onSelectSession, onLogout, 
       }`}>
       <div className="p-5 pb-4 border-b border-emerald-900">
         <div className="flex items-center gap-2">
-          <span className="text-xl">🌿</span>
+          <Logo className="w-5 h-5" />
           <span className="font-display text-xl text-sage-200 font-medium">
             Solace
           </span>

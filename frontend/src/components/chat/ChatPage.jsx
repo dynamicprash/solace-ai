@@ -7,6 +7,7 @@ import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import MessageList from './MessageList'
 import InputArea from './InputArea'
+import Logo from '../common/Logo'
 
 export default function ChatPage() {
   const navigate = useNavigate()
@@ -378,7 +379,7 @@ export default function ChatPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 backdrop-blur-xs animate-fadeIn">
           <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-[90%] border border-stone-200 shadow-xl animate-scaleUp">
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-2xl">🌿</span>
+              <Logo className="w-6 h-6" />
               <h3 className="text-lg font-display font-semibold text-sage-950">Active Session</h3>
             </div>
             <p className="text-sm text-stone-600 leading-relaxed mb-6">

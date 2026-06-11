@@ -259,7 +259,21 @@
 <body>
   <div class="card">
     <div class="logo">
-      <span class="logo-icon">🌿</span>
+      <div class="logo-icon" style="font-size: 0; line-height: 0; display: flex; justify-content: center;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" style="width: 48px; height: 48px; margin-bottom: 10px;">
+          <defs>
+            <linearGradient id="leafGradAuth" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#6a9e69" />
+              <stop offset="100%" stop-color="#3a6640" />
+            </linearGradient>
+          </defs>
+          <rect width="128" height="128" rx="32" fill="#f7f4ee" />
+          <g transform="translate(16, 16) scale(4)">
+            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 2 5.5a7 7 0 0 1-13.8 2.1" fill="url(#leafGradAuth)" />
+            <path d="M19 2c-2.26 4.33-5.27 7.14-8 10" stroke="#f7f4ee" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </g>
+        </svg>
+      </div>
       <span class="logo-text">Solace</span>
       <span class="logo-sub">Your safe space to be heard</span>
     </div>

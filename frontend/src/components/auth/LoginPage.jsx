@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LoginForm from './LoginForm'
 import RegisterForm from './RegisterForm'
+import Logo from '../common/Logo'
 
 export default function LoginPage({ mode: initialMode = 'login' }) {
   const [mode, setMode] = useState(initialMode)
@@ -46,7 +47,9 @@ export default function LoginPage({ mode: initialMode = 'login' }) {
       <div className="relative z-10 bg-white border border-slate-200 rounded-3xl w-full max-w-96 animate-fadeUp shadow-xl p-12 px-11 pb-10">
         {/* Logo */}
         <div className="text-center mb-9">
-          <div className="text-5xl mb-2.5">🌿</div>
+          <div className="flex justify-center mb-2.5">
+            <Logo className="w-12 h-12" />
+          </div>
           <h1 className="font-display font-bold text-sage-700 text-2xl tracking-tight mb-1.5">
             Solace
           </h1>

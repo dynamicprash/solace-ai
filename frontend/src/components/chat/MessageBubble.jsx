@@ -1,4 +1,5 @@
 import ReactMarkdown from 'react-markdown';
+import Logo from '../common/Logo';
 
 export default function MessageBubble({ message, isUser, prediction }) {
   if (isUser) {
@@ -27,8 +28,8 @@ export default function MessageBubble({ message, isUser, prediction }) {
   // Bot message
   return (
     <div className="flex items-end gap-2.5 animate-fadeUp">
-      <div className="w-8.5 h-8.5 rounded-full bg-sage-100 flex items-center justify-center text-base flex-shrink-0 border border-sage-200 select-none">
-        🌿
+      <div className="w-8.5 h-8.5 rounded-full bg-sage-100 flex items-center justify-center flex-shrink-0 border border-sage-200 select-none p-1">
+        <Logo className="w-full h-full" />
       </div>
       <div className="max-w-[min(640px,90%)] p-4 px-5 rounded-3xl rounded-bl text-[0.95rem] leading-relaxed bg-white text-stone-800 border border-slate-200 shadow-sm">
         <ReactMarkdown

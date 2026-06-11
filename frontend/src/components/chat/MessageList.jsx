@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import MessageBubble from './MessageBubble'
 import TypingIndicator from './TypingIndicator'
 import WelcomeScreen from './WelcomeScreen'
+import Logo from '../common/Logo'
 
 export default function MessageList({
   messages,
@@ -63,7 +64,9 @@ export default function MessageList({
         {isConcluded && (
           <div className="flex items-center justify-center my-4">
             <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 px-7 text-center max-w-md">
-              <div className="text-2xl mb-2">🌿</div>
+              <div className="flex justify-center mb-2">
+                <Logo className="w-8 h-8" />
+              </div>
               <p className="font-display font-semibold text-emerald-700 text-sm mb-1">
                 Session Concluded
               </p>

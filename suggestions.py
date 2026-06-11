@@ -1,20 +1,3 @@
-"""
-suggestions.py
-===============
-All LLM interactions — powered by Groq (FREE, fast inference).
-Fully adaptive conversation with emotion-aware prompting.
-
-Model used: llama-3.3-70b-versatile
-  - Free tier: 14,400 requests/day, 500,000 tokens/minute
-  - No credit card required
-
-Get your free Groq API key:
-  1. Go to https://console.groq.com
-  2. Sign up (free, no credit card)
-  3. API Keys → Create API Key  (starts with gsk_...)
-  4. Set env variable:  GROQ_API_KEY=gsk_...
-"""
-
 import os
 import re
 import json

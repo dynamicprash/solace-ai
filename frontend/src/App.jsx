@@ -9,6 +9,8 @@ import DashboardPage from './components/dashboard/DashboardPage'
 import JournalPage from './components/journal/JournalPage'
 import LandingPage from './pages/LandingPage'
 
+import Logo from './components/common/Logo'
+
 export default function App() {
   const { setUser, setAuthenticated, isAuthenticated } = useAuthStore()
   const [isLoading, setIsLoading] = useState(true)
@@ -69,7 +71,7 @@ export default function App() {
     return (
       <div className="w-full h-screen flex items-center justify-center bg-cream">
         <div className="flex flex-col items-center gap-4">
-          <div className="text-4xl">🌿</div>
+          <Logo className="w-10 h-10 animate-pulse" />
           <div className="text-lg font-display text-sage-600">Loading...</div>
         </div>
       </div>

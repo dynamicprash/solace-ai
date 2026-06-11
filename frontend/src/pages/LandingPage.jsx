@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
+import Logo from '../components/common/Logo'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer,
 } from 'recharts'
@@ -62,7 +63,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
           {/* Logo */}
           <button onClick={() => scrollTo('hero')} className="flex items-center gap-2 cursor-pointer bg-transparent border-none p-0">
-            <span className="text-2xl">🌿</span>
+            <Logo className="w-7 h-7" />
             <span className="font-display text-xl text-sage-700 font-semibold tracking-tight">Solace AI.</span>
           </button>
 
@@ -158,7 +159,7 @@ export default function LandingPage() {
           {/* Left copy */}
           <div className="animate-fadeUp">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-sage-100 text-sage-700 rounded-full text-xs font-semibold uppercase tracking-wider mb-6">
-              <span className="text-sm">🌿</span> Your Private Mental Health Companion
+              <Logo className="w-4 h-4 inline" /> Your Private Mental Health Companion
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-sage-900 leading-tight mb-6">
               Your Safe Space<br />
@@ -352,7 +353,7 @@ export default function LandingPage() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl">🌿</span>
+              <Logo className="w-6 h-6" />
               <span className="font-display text-lg text-sage-700 font-semibold">Solace AI</span>
             </div>
             <p className="text-xs text-stone-400 leading-relaxed">

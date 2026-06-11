@@ -1,16 +1,3 @@
-"""
-Default application entry: FastAPI ASGI app (re-exported for `uvicorn app:app`).
-
-Flask backend preserved in app_flask.py:
-  python app_flask.py
-  gunicorn app_flask:app
-
-Run FastAPI:
-  python app.py
-  uvicorn app:app --host 0.0.0.0 --port 8000 --reload
-
-Docs: http://localhost:8000/docs
-"""
 
 import os
 from pathlib import Path

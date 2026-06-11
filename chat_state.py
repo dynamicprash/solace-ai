@@ -1,8 +1,3 @@
-"""
-Predictor singleton, session secret, and pure chat helpers (no storage).
-PostgreSQL persistence lives in db/.
-"""
-
 import hashlib
 import os
 from collections import Counter
