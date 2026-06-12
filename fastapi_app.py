@@ -552,6 +552,16 @@ async def api_message(request: Request):
     factory = get_async_session_factory()
     _STOP = object()
 
+    def is_meaningful_input(text: str) -> bool:
+        """Returns False for gibberish, punctuation-only, or too-short inputs."""
+        import re as _re
+        alpha_chars = [c for c in text if c.isalpha()]
+        if len(alpha_chars) < 3:
+            return False
+        if not _re.search(r'[a-zA-Z]{2,}', text):
+            return False
+        return True
+
     async def event_gen():
         nonlocal user_input, session_id, user_id
         dom_emotions = ["Neutral"]
@@ -565,6 +575,19 @@ async def api_message(request: Request):
                     return
                 if not user_input:
                     yield f"data: {json.dumps({'type': 'error', 'message': 'Message is required'})}\n\n"
+                    return
+
+                # ── Gibberish / punctuation-only guard ──────────────────────
+                if not is_meaningful_input(user_input):
+                    gentle = (
+                        "I noticed that message didn't have much text in it. "
+                        "Whenever you're ready, I'm here to listen. 💙"
+                    )
+                    await crud.add_user_message(db, sess, user_input)
+                    await crud.add_bot_message(db, sess, gentle)
+                    await db.commit()
+                    yield f"data: {json.dumps({'type': 'token', 'content': gentle})}\n\n"
+                    yield f"data: {json.dumps({'type': 'done', 'question_count': sess.question_count, 'emotions': ['Neutral'], 'primary_emotion': 'Neutral'})}\n\n"
                     return
 
                 await crud.add_user_message(db, sess, user_input)
